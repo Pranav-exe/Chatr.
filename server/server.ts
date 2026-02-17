@@ -46,9 +46,9 @@ app.get("*", (req: Request, res: Response) => {
 
 server.listen(PORT, () => {
   connectToMongoDB();
-  console.log(`[APEX-SERVER] Listening on port: ${PORT}`);
+  console.log(`Listening on port: ${PORT}`);
   console.log(
-    `[APEX-SERVER] Environment: ${process.env.NODE_ENV || "development"}`,
+    ` Environment: ${process.env.NODE_ENV || "development"}`,
   );
-  console.log(`[APEX-SERVER] System Check: OK`);
+  console.log(`system Check: OK`);
 });
