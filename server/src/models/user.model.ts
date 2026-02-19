@@ -20,6 +20,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      trim: true,
     },
     password: {
       type: String,
@@ -34,9 +35,10 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
     profilePic: {
       type: String,
       default: "",
+      trim: true,
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);

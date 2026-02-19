@@ -15,18 +15,23 @@ const SignUp = () => {
 	const { loading, signup } = useSignup();
 
 	const handleCheckboxChange = (gender: string) => {
-		setInputs({ ...inputs, gender });
+		setInputs((prev) => ({
+			...prev,
+			gender,
+		}));
 	};
+
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 		await signup(inputs);
 	};
+	console.log("inputs:", inputs);
 
 	return (
 		<div className='flex flex-col items-center justify-center min-w-[500px] mx-auto animate-fade-in z-20'>
 			<div className='w-full p-10 rounded-[3rem] glass-panel volt-glow-sm shadow-2xl relative overflow-hidden'>
-				{/* Deco subtle glow */}
+
 				<div className='absolute -bottom-24 -left-24 w-48 h-48 bg-volt/[0.03] rounded-full blur-3xl'></div>
 
 				<h1 className='text-6xl font-[900] text-center text-white mb-2 tracking-tighter uppercase brand-font'>

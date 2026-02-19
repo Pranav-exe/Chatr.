@@ -1,31 +1,45 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-interface AuthUser {
-	_id: string;
-	fullName: string;
-	username: string;
-	profilePic: string;
-	gender: string;
+export interface AuthUser {
+  _id: string;
+  fullName: string;
+  username: string;
+  profilePic: string;
+  gender: string;
 }
 
 interface AuthContextType {
-	authUser: AuthUser | null;
-	setAuthUser: (user: AuthUser | null) => void;
+  authUser: AuthUser | null;
+  setAuthUser: (user: AuthUser | null) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAuthContext = () => {
-	const context = useContext(AuthContext);
-	if (!context) {
-		throw new Error("useAuthContext must be used within an AuthContextProvider");
-	}
-	return context;
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuthContext must be used within an AuthContextProvider");
+  }
+  return context;
+};
+
+const getStoredUser = (): AuthUser | null => {
+  try {
+    const stored = localStorage.getItem("chat-user");
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
 };
 
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
-	const [authUser, setAuthUser] = useState<AuthUser | null>(JSON.parse(localStorage.getItem("chat-user") || "null"));
+  const [authUser, setAuthUser] = useState<AuthUser | null>(getStoredUser());
 
-	return <AuthContext.Provider value={{ authUser, setAuthUser }}>{children}</AuthContext.Provider>;
+  // Sync with localStorage automatically
+  useEffect(() => {
+    if (authUser) localStorage.setItem("chat-user", JSON.stringify(authUser));
+    else localStorage.removeItem("chat-user");
+  }, [authUser]);
+
+  return <AuthContext.Provider value={{ authUser, setAuthUser }}>{children}</AuthContext.Provider>;
 };

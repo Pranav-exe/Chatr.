@@ -13,6 +13,7 @@ const conversationSchema: Schema<IConversation> = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
+        required: true,
       },
     ],
     messages: [
@@ -23,12 +24,12 @@ const conversationSchema: Schema<IConversation> = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const Conversation: Model<IConversation> = mongoose.model<IConversation>(
   "Conversation",
-  conversationSchema,
+  conversationSchema
 );
 
 export default Conversation;

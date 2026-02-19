@@ -21,35 +21,34 @@ const useSignup = () => {
     confirmPassword,
     gender,
   }: SignupInputs) => {
-    const success = handleInputErrors({
-      fullName,
-      username,
-      password,
-      confirmPassword,
-      gender,
-    });
-    if (!success) return;
+    // Trim inputs
+    fullName = fullName.trim();
+    username = username.trim();
+    password = password.trim();
+    confirmPassword = confirmPassword.trim();
+    gender = gender.trim();
+
+    if (!handleInputErrors({ fullName, username, password, confirmPassword, gender })) return;
 
     setLoading(true);
+
     try {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName,
-          username,
-          password,
-          confirmPassword,
-          gender,
-        }),
+        credentials: "include", // important if using cookies
+        body: JSON.stringify({ fullName, username, password, confirmPassword, gender }),
       });
 
       const data = await res.json();
-      if (data.error) {
-        throw new Error(data.error);
+
+      if (!res.ok) {
+        throw new Error(data.error || "Signup failed");
       }
+
       localStorage.setItem("chat-user", JSON.stringify(data));
       setAuthUser(data);
+
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -59,15 +58,10 @@ const useSignup = () => {
 
   return { loading, signup };
 };
+
 export default useSignup;
 
-function handleInputErrors({
-  fullName,
-  username,
-  password,
-  confirmPassword,
-  gender,
-}: SignupInputs) {
+function handleInputErrors({ fullName, username, password, confirmPassword, gender }: SignupInputs) {
   if (!fullName || !username || !password || !confirmPassword || !gender) {
     toast.error("Please fill in all fields");
     return false;

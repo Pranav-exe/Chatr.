@@ -1,17 +1,19 @@
 {
-	"compilerOptions": {
-		"target": "ESNext",
-		"module": "ESNext",
-		"moduleResolution": "node",
-		"outDir": "./dist",
-		"rootDir": ".",
-		"strict": true,
-		"esModuleInterop": true,
-		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true,
-		"allowJs": true,
-		"typeRoots": ["../node_modules/@types"]
-	},
-	"include": ["**/*.ts", "**/*"],
-	"exclude": ["node_modules"]
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist",
+
+    "module": "commonjs",
+    "target": "es2020",
+    "lib": ["es2020"],
+
+    "types": ["node"],
+
+    "strict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    "skipLibCheck": true
+  },
+  "include": ["src", "src/db"]
 }

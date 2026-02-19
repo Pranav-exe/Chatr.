@@ -1,0 +1,42 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: chatr_mongodb
+    networks:
+      - app_network
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: ./server/Dockerfile
+    container_name: chatr_backend
+    env_file:
+      - ./server/.env
+    depends_on:
+      - mongodb
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./client/Dockerfile
+    container_name: chatr_nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - app_network
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+
+networks:
+  app_network:
+    driver: bridge

@@ -1,52 +1,66 @@
 import { createContext, useState, useEffect, useContext, ReactNode } from "react";
 import { useAuthContext } from "./AuthContext";
-import io, { Socket } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
 interface SocketContextType {
-	socket: Socket | null;
-	onlineUsers: string[];
+  socket: Socket | null;
+  onlineUsers: string[];
 }
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
 
 export const useSocketContext = () => {
-	const context = useContext(SocketContext);
-	if (!context) {
-		throw new Error("useSocketContext must be used within a SocketContextProvider");
-	}
-	return context;
+  const context = useContext(SocketContext);
+  if (!context) {
+    throw new Error("useSocketContext must be used within a SocketContextProvider");
+  }
+  return context;
 };
 
 export const SocketContextProvider = ({ children }: { children: ReactNode }) => {
-	const [socket, setSocket] = useState<Socket | null>(null);
-	const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
-	const { authUser } = useAuthContext();
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
+  const { authUser } = useAuthContext();
 
-	useEffect(() => {
-		if (authUser) {
-			const newSocket = io("http://localhost:5001", {
-				query: {
-					userId: authUser._id,
-				},
-			});
+  useEffect(() => {
+    if (!authUser) return;
 
-			setSocket(newSocket);
+    // Decide URL dynamically: dev vs prod
+    const socketUrl =
+      process.env.NODE_ENV === "development"
+        ? "http://localhost:5001"
+        : window.location.origin; // in production, frontend & backend served via same origin
 
-			// socket.on() is used to listen to the events. can be used both on client and server side
-			newSocket.on("getOnlineUsers", (users: string[]) => {
-				setOnlineUsers(users);
-			});
+    // Initialize Socket.IO client
+    const newSocket = io(socketUrl, {
+      query: { userId: authUser._id },
+      withCredentials: true, // important for sending cookies/JWT
+      transports: ["websocket", "polling"], // ensures stable connection
+    });
 
-			return () => {
-				newSocket.close();
-			};
-		} else {
-			if (socket) {
-				socket.close();
-				setSocket(null);
-			}
-		}
-	}, [authUser]);
+    setSocket(newSocket);
 
-	return <SocketContext.Provider value={{ socket, onlineUsers }}>{children}</SocketContext.Provider>;
+    // Listen for online users
+    newSocket.on("getOnlineUsers", (users: string[]) => {
+      setOnlineUsers(users);
+    });
+
+    // Optional: listen for errors or connection issues
+    newSocket.on("connect_error", (err) => {
+      console.error("Socket connection error:", err);
+    });
+
+    // Cleanup on unmount or auth change
+    return () => {
+      newSocket.disconnect();
+      setSocket(null);
+      setOnlineUsers([]);
+    };
+  }, [authUser]);
+
+  return (
+    <SocketContext.Provider value={{ socket, onlineUsers }}>
+      {children}
+    </SocketContext.Provider>
+  );
 };

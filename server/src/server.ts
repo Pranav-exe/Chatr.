@@ -14,19 +14,30 @@ import userRoutes from "./routes/user.routes";
 import connectToMongoDB from "./db/connectToMongoDB";
 import { app, server } from "./socket/socket";
 
-const __dirname = path.resolve();
 const PORT: string | number = process.env.PORT || 5001;
 
-// Middlewares
-app.use(morgan("dev")); // Request logging
-app.use(express.json());
-app.use(cookieParser());
+// Middleware
 
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(cookieParser() as any);
+
+
+// CORS if needed (especially for dev)
+import cors from "cors";
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    credentials: true,
+  })
+);
+
+// API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/users", userRoutes);
 
-// DevOps Health Check
+// Health check
 app.get("/api/health", (req: Request, res: Response) => {
   const dbStatus =
     mongoose.connection.readyState === 1 ? "connected" : "disconnected";
@@ -38,17 +49,23 @@ app.get("/api/health", (req: Request, res: Response) => {
   });
 });
 
-app.use(express.static(path.join(__dirname, "/client/dist")));
+// Serve frontend
+const clientBuildPath = path.join(__dirname, "../client/dist");
+app.use(express.static(clientBuildPath));
 
 app.get("*", (req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
+  res.sendFile(path.join(clientBuildPath, "index.html"));
 });
 
-server.listen(PORT, () => {
-  connectToMongoDB();
-  console.log(`Listening on port: ${PORT}`);
-  console.log(
-    ` Environment: ${process.env.NODE_ENV || "development"}`,
-  );
-  console.log(`system Check: OK`);
-});
+// Start server only after MongoDB is connected
+connectToMongoDB()
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+      console.log("System Check: OK");
+    });
+  })
+  .catch((err) => {
+    console.error("Failed to connect to MongoDB:", err);
+  });

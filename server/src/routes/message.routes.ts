@@ -1,9 +1,8 @@
-import * as express from "express";
 import { Router } from "express";
 import { getMessages, sendMessage } from "../controllers/message.controller";
 import protectRoute from "../middleware/protectRoute";
 
-const router: Router = express.Router();
+const router = Router();
 
 router.get("/:id", protectRoute, getMessages);
 router.post("/send/:id", protectRoute, sendMessage);

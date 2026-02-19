@@ -5,8 +5,8 @@
 	"main": "server.js",
 	"scripts": {
 		"dev": "tsx watch server/server.ts",
-		"start": "tsx server/server.ts",
-		"build": "npm install && npm install --prefix client && npm run build --prefix client"
+		"build": "tsc",
+		"start": "node dist/server.js"
 	},
 	"type": "module",
 	"keywords": ["chat", "mern", "typescript", "devops", "socket.io", "pranav-sharma"],

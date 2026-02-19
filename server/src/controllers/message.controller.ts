@@ -9,46 +9,34 @@ export const sendMessage = async (req: Request, res: Response) => {
     const { id: receiverId } = req.params;
     const senderId = req.user?._id;
 
-    if (!senderId) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
+    if (!senderId) return res.status(401).json({ error: "Unauthorized" });
+    if (!message || message.trim() === "") return res.status(400).json({ error: "Message cannot be empty" });
 
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
     });
 
     if (!conversation) {
-      conversation = await Conversation.create({
-        participants: [senderId, receiverId],
-      });
+      conversation = await Conversation.create({ participants: [senderId, receiverId] });
     }
 
-    const newMessage = new Message({
-      senderId,
-      receiverId,
-      message,
-    });
+    const newMessage = new Message({ senderId, receiverId, message });
+    conversation.messages.push(newMessage._id);
 
-    if (newMessage) {
-      conversation.messages.push(newMessage._id as any);
-    }
-
-    // await conversation.save();
-    // await newMessage.save();
-
-    // this will run in parallel
     await Promise.all([conversation.save(), newMessage.save()]);
 
-    // SOCKET IO FUNCTIONALITY WILL GO HERE
-    const receiverSocketId = getReceiverSocketId(receiverId as string);
+    // SOCKET.IO: send message to receiver
+    const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
-      // io.to(<socket_id>).emit() used to send events to specific client
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
 
+    // Optional: send to sender too to update UI immediately
+    io.to(senderId.toString()).emit("newMessage", newMessage);
+
     res.status(201).json(newMessage);
   } catch (error: any) {
-    console.log("Error in sendMessage controller: ", error.message);
+    console.error("Error in sendMessage controller:", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -58,21 +46,17 @@ export const getMessages = async (req: Request, res: Response) => {
     const { id: userToChatId } = req.params;
     const senderId = req.user?._id;
 
-    if (!senderId) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
+    if (!senderId) return res.status(401).json({ error: "Unauthorized" });
 
     const conversation = await Conversation.findOne({
       participants: { $all: [senderId, userToChatId] },
-    }).populate("messages"); // NOT REFERENCE BUT ACTUAL MESSAGES
+    }).populate("messages");
 
     if (!conversation) return res.status(200).json([]);
 
-    const messages = conversation.messages;
-
-    res.status(200).json(messages);
+    res.status(200).json(conversation.messages);
   } catch (error: any) {
-    console.log("Error in getMessages controller: ", error.message);
+    console.error("Error in getMessages controller:", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };

@@ -1,11 +1,18 @@
-export function extractTime(dateString: string) {
+export function extractTime(dateString: string): string {
   const date = new Date(dateString);
-  const hours = padZero(date.getHours());
+  if (isNaN(date.getTime())) return "Invalid time";
+
+  let hours = date.getHours();
   const minutes = padZero(date.getMinutes());
-  return `${hours}:${minutes}`;
+  const ampm = hours >= 12 ? "PM" : "AM";
+
+  // Convert 24-hour to 12-hour format
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+
+  return `${hours}:${minutes} ${ampm}`;
 }
 
-// Helper function to pad single-digit numbers with a leading zero
-function padZero(number: number) {
+function padZero(number: number): string {
   return number.toString().padStart(2, "0");
 }

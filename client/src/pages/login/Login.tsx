@@ -16,8 +16,7 @@ const Login = () => {
 	return (
 		<div className='flex flex-col items-center justify-center min-w-[420px] mx-auto animate-fade-in z-20'>
 			<div className='w-full p-10 rounded-[2.5rem] glass-panel volt-glow-sm shadow-2xl relative overflow-hidden'>
-				{/* Deco subtle glow */}
-				<div className='absolute -top-24 -right-24 w-48 h-48 bg-volt/[0.03] rounded-full blur-3xl'></div>
+
 
 				<h1 className='text-6xl font-[900] text-center text-white mb-2 tracking-tighter uppercase brand-font'>
 					CHATR<span className='text-volt'>.</span>
