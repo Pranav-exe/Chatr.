@@ -3,7 +3,9 @@ import { create } from "zustand";
 export interface ConversationType {
   _id: string;
   fullName: string;
+  username: string;
   profilePic: string;
+  lastSeen: string;
 }
 
 export interface MessageType {
@@ -18,6 +20,14 @@ interface ConversationState {
   selectedConversation: ConversationType | null;
   setSelectedConversation: (
     selectedConversation: ConversationType | null,
+  ) => void;
+
+  conversations: ConversationType[];
+  setConversations: (conversations: ConversationType[]) => void;
+  addConversation: (conversation: ConversationType) => void;
+  updateConversation: (
+    userId: string,
+    updates: Partial<ConversationType>,
   ) => void;
 
   messages: MessageType[];
@@ -38,6 +48,27 @@ const useConversation = create<ConversationState>((set) => ({
   selectedConversation: null,
   setSelectedConversation: (selectedConversation) =>
     set({ selectedConversation }),
+
+  conversations: [],
+  setConversations: (conversations) => set({ conversations }),
+  addConversation: (conversation) =>
+    set((state) => {
+      const exists = state.conversations.find(
+        (c) => c._id === conversation._id,
+      );
+      if (exists) return state;
+      return { conversations: [...state.conversations, conversation] };
+    }),
+  updateConversation: (userId, updates) =>
+    set((state) => ({
+      conversations: state.conversations.map((c) =>
+        c._id === userId ? { ...c, ...updates } : c,
+      ),
+      selectedConversation:
+        state.selectedConversation?._id === userId
+          ? { ...state.selectedConversation, ...updates }
+          : state.selectedConversation,
+    })),
 
   messages: [],
   setMessages: (messages) => set({ messages }),

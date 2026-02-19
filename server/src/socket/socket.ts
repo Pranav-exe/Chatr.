@@ -2,6 +2,7 @@ import http from "http";
 import express, { Application } from "express";
 import { Server, Socket } from "socket.io";
 import dotenv from "dotenv";
+import User from "../models/user.model";
 
 dotenv.config();
 
@@ -55,10 +56,23 @@ io.on("connection", (socket: Socket) => {
     }
   });
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     console.log(`User disconnected: ${socket.id}`);
     if (userId && userSocketMap[userId]) {
       delete userSocketMap[userId];
+
+      try {
+        const lastSeen = new Date();
+        await User.findByIdAndUpdate(userId, { lastSeen });
+        io.emit("userStatusUpdate", {
+          userId,
+          isOnline: false,
+          lastSeen: lastSeen.toISOString(),
+        });
+      } catch (error) {
+        console.error("Error updating lastSeen:", error);
+      }
+
       broadcastOnlineUsers();
     }
   });

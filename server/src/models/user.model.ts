@@ -6,6 +6,7 @@ export interface IUser extends Document {
   password: string;
   gender: "male" | "female";
   profilePic: string;
+  lastSeen: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,8 +38,12 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    lastSeen: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);

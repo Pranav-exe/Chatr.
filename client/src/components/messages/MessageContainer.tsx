@@ -6,10 +6,14 @@ import { TiMessages } from "react-icons/ti";
 import { useAuthContext } from "../../context/AuthContext";
 import { IoArrowBack } from "react-icons/io5";
 
+import { useSocketContext } from "../../context/SocketContext";
+import { formatLastSeen } from "../../utils/formatLastSeen";
 import TypingIndicator from "./TypingIndicator";
 
 const MessageContainer = () => {
 	const { selectedConversation, setSelectedConversation, typingUsers } = useConversation();
+	const { onlineUsers } = useSocketContext();
+	const isOnline = onlineUsers.includes(selectedConversation?._id || "");
 	const isTyping = typingUsers.includes(selectedConversation?._id || "");
 
 	useEffect(() => {
@@ -34,10 +38,15 @@ const MessageContainer = () => {
 								<img src={selectedConversation.profilePic} alt='' className='rounded-full w-full h-full object-cover' />
 							</div>
 							<div className='flex flex-col'>
-								<span className='text-white font-bold tracking-tight leading-tight text-lg'>{selectedConversation.fullName}</span>
+								<div className='flex items-center gap-2'>
+									<span className='text-white font-bold tracking-tight leading-tight text-lg'>{selectedConversation.fullName}</span>
+									<span className='text-xs text-white/30 font-medium tracking-tight mt-0.5 leading-none'>@{selectedConversation.username}</span>
+								</div>
 								<div className='flex items-center gap-1.5'>
-									<div className='w-1.5 h-1.5 rounded-full bg-volt animate-pulse'></div>
-									<span className='text-[10px] text-volt font-black uppercase tracking-widest opacity-80'>Active Session</span>
+									<div className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-volt animate-pulse' : 'bg-white/20'}`}></div>
+									<span className={`text-[10px] font-black uppercase tracking-widest ${isOnline ? 'text-volt opacity-80' : 'text-white/40'}`}>
+										{isOnline ? 'Active Session' : `Last seen ${formatLastSeen(selectedConversation.lastSeen)}`}
+									</span>
 								</div>
 							</div>
 						</div>

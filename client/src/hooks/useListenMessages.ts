@@ -13,6 +13,8 @@ const useListenMessages = () => {
     incrementUnreadCount,
     setTypingUser,
     removeTypingUser,
+    addConversation,
+    updateConversation,
   } = useConversation();
 
   useEffect(() => {
@@ -45,14 +47,33 @@ const useListenMessages = () => {
       removeTypingUser(senderId);
     };
 
+    const handleNewUser = (newUser: any) => {
+      addConversation(newUser);
+    };
+
+    const handleUserStatusUpdate = ({
+      userId,
+      lastSeen,
+    }: {
+      userId: string;
+      isOnline: boolean;
+      lastSeen: string;
+    }) => {
+      updateConversation(userId, { lastSeen });
+    };
+
     socket.on("newMessage", handleNewMessage);
     socket.on("typing", handleTyping);
     socket.on("stopTyping", handleStopTyping);
+    socket.on("newUser", handleNewUser);
+    socket.on("userStatusUpdate", handleUserStatusUpdate);
 
     return () => {
       socket.off("newMessage", handleNewMessage);
       socket.off("typing", handleTyping);
       socket.off("stopTyping", handleStopTyping);
+      socket.off("newUser", handleNewUser);
+      socket.off("userStatusUpdate", handleUserStatusUpdate);
     };
   }, [
     socket,
@@ -61,6 +82,8 @@ const useListenMessages = () => {
     incrementUnreadCount,
     setTypingUser,
     removeTypingUser,
+    addConversation,
+    updateConversation,
     authUser,
   ]);
 };

@@ -1,15 +1,10 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-
-interface Conversation {
-  _id: string;
-  fullName: string;
-  profilePic: string;
-}
+import useConversation from "../zustand/useConversation";
 
 const useGetConversations = () => {
   const [loading, setLoading] = useState(false);
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const { conversations, setConversations } = useConversation();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -18,7 +13,8 @@ const useGetConversations = () => {
       setLoading(true);
       try {
         const res = await fetch("/api/users", {
-          credentials: "include", // important if auth cookie is used
+          credentials: "include",
+          signal: controller.signal,
         });
 
         const data = await res.json();
@@ -40,7 +36,7 @@ const useGetConversations = () => {
     getConversations();
 
     return () => controller.abort();
-  }, []);
+  }, [setConversations]);
 
   return { loading, conversations };
 };

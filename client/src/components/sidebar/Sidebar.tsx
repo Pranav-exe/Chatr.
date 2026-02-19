@@ -1,5 +1,5 @@
 import Conversations from "./Conversations";
-import LogoutButton from "./LogoutButton";
+import UserProfile from "./UserProfile";
 import SearchInput from "./SearchInput";
 
 const Sidebar = () => {
@@ -9,9 +9,7 @@ const Sidebar = () => {
 				<SearchInput />
 				<div className='divider h-1 my-6 before:bg-white/5 after:bg-white/5'></div>
 				<Conversations />
-				<div className='mt-auto pt-4'>
-					<LogoutButton />
-				</div>
+				<UserProfile />
 			</div>
 		</div>
 	);
