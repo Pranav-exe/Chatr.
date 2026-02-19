@@ -14,10 +14,10 @@ const Message = ({ message }: MessageProps) => {
 	const formattedTime = extractTime(message.createdAt);
 	const chatClassName = fromMe ? "chat-end" : "chat-start";
 	const profilePic = fromMe ? authUser?.profilePic : selectedConversation?.profilePic;
-	// Telegram/Discord inspired premium bubbles
+	// Balanced dual-tone system: dimmed volt but still highlighted
 	const bubbleClasses = fromMe
-		? "bg-volt/10 border border-volt/20 text-white rounded-2xl rounded-tr-none px-4 py-2.5 shadow-lg volt-glow-sm"
-		: "bg-white/[0.05] border border-white/5 text-white/95 rounded-2xl rounded-tl-none px-4 py-2.5 shadow-md";
+		? "bg-volt/30 border border-volt/40 text-white font-medium rounded-2xl rounded-tr-none px-4 py-2.5 shadow-[0_8px_20px_-5px_rgba(204,255,0,0.15)]"
+		: "bg-[#1a1a1e] border border-white/10 text-white/95 rounded-2xl rounded-tl-none px-4 py-2.5 shadow-lg relative after:absolute after:inset-0 after:rounded-2xl after:bg-white/[0.02]";
 
 	const shakeClass = message.shouldShake ? "shake" : "";
 
@@ -35,7 +35,7 @@ const Message = ({ message }: MessageProps) => {
 						{message.message}
 					</div>
 				</div>
-				<div className={`chat-footer opacity-40 text-[11px] flex gap-1 items-center px-1 font-medium ${fromMe ? 'justify-end text-volt/60' : 'justify-start text-white/40'}`}>
+				<div className={`chat-footer opacity-60 text-[10px] flex gap-1 items-center px-1.5 font-bold tracking-tight mt-1 ${fromMe ? 'justify-end text-volt' : 'justify-start text-white/60'}`}>
 					{formattedTime}
 				</div>
 			</div>
