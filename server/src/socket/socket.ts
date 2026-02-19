@@ -9,11 +9,35 @@ dotenv.config();
 const app: Application = express();
 const server = http.createServer(app);
 
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+  : [
+      "http://localhost:3000",
+      "http://localhost:5001",
+      "http://localhost",
+      "http://127.0.0.1:3000",
+      "http://127.0.0.1:5001",
+      "http://127.0.0.1",
+    ];
+
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000", // must match client
+    origin: (origin, callback) => {
+      if (process.env.NODE_ENV !== "production") return callback(null, true);
+
+      const allowed = process.env.ALLOWED_ORIGINS
+        ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+        : ["http://localhost:3000", "http://localhost"];
+
+      if (!origin || allowed.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`Socket CORS blocked for origin: ${origin}`);
+        callback(null, false);
+      }
+    },
     methods: ["GET", "POST"],
-    credentials: true, // allow cookies
+    credentials: true,
   },
 });
 

@@ -22,14 +22,38 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser() as any);
 
-
-// CORS if needed (especially for dev)
+// CORS — allow both local dev (Vite on :3000) and Docker prod (nginx on :80)
 import cors from "cors";
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+  : [
+      "http://localhost:3000",
+      "http://localhost:5001",
+      "http://localhost",
+      "http://127.0.0.1:3000",
+      "http://127.0.0.1:5001",
+      "http://127.0.0.1",
+    ];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: (origin, callback) => {
+      // Allow everything in dev, be strict in prod
+      if (process.env.NODE_ENV !== "production") return callback(null, true);
+
+      const allowed = process.env.ALLOWED_ORIGINS
+        ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+        : ["http://localhost:3000", "http://localhost"];
+
+      if (!origin || allowed.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`CORS blocked for origin: ${origin}`);
+        callback(null, false);
+      }
+    },
     credentials: true,
-  })
+  }),
 );
 
 // API Routes
@@ -60,8 +84,9 @@ app.get("*", (req: Request, res: Response) => {
 // Start server only after MongoDB is connected
 connectToMongoDB()
   .then(() => {
-    server.listen(PORT, () => {
+    server.listen(PORT as number, "0.0.0.0", () => {
       console.log(`Server running on port ${PORT}`);
+      console.log(`Bound to 0.0.0.0 (IPv4 & IPv6 support)`);
       console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
       console.log("System Check: OK");
     });

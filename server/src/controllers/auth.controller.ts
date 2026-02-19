@@ -27,8 +27,8 @@ export const signup = async (req: Request, res: Response) => {
 
     const profilePic =
       gender === "male"
-        ? `https://api.dicebear.com/7.x/miniavs/svg?seed=${username}&flip=true`
-        : `https://api.dicebear.com/7.x/miniavs/svg?seed=${username}`;
+        ? `https://avatar.iran.liara.run/public/boy?username=${username}`
+        : `https://avatar.iran.liara.run/public/girl?username=${username}`;
 
     const newUser = new User({
       fullName,

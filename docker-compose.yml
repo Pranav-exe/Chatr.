@@ -11,7 +11,7 @@ services:
   backend:
     build:
       context: ./server
-      dockerfile: ./server/Dockerfile
+      dockerfile: dockerFile
     container_name: chatr_backend
     env_file:
       - ./server/.env
@@ -24,7 +24,7 @@ services:
   nginx:
     build:
       context: .
-      dockerfile: ./client/Dockerfile
+      dockerfile: ./client/dockerfile
     container_name: chatr_nginx
     ports:
       - "80:80"

@@ -10,14 +10,17 @@ export const sendMessage = async (req: Request, res: Response) => {
     const senderId = req.user?._id;
 
     if (!senderId) return res.status(401).json({ error: "Unauthorized" });
-    if (!message || message.trim() === "") return res.status(400).json({ error: "Message cannot be empty" });
+    if (!message || message.trim() === "")
+      return res.status(400).json({ error: "Message cannot be empty" });
 
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
     });
 
     if (!conversation) {
-      conversation = await Conversation.create({ participants: [senderId, receiverId] });
+      conversation = await Conversation.create({
+        participants: [senderId, receiverId],
+      });
     }
 
     const newMessage = new Message({ senderId, receiverId, message });
@@ -31,8 +34,11 @@ export const sendMessage = async (req: Request, res: Response) => {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
 
-    // Optional: send to sender too to update UI immediately
-    io.to(senderId.toString()).emit("newMessage", newMessage);
+    // Also notify sender so their UI updates in real-time
+    const senderSocketId = getReceiverSocketId(senderId.toString());
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("newMessage", newMessage);
+    }
 
     res.status(201).json(newMessage);
   } catch (error: any) {

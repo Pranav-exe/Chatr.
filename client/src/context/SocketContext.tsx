@@ -27,9 +27,9 @@ export const SocketContextProvider = ({ children }: { children: ReactNode }) => 
 
     // Decide URL dynamically: dev vs prod
     const socketUrl =
-      process.env.NODE_ENV === "development"
-        ? "http://localhost:5001"
-        : window.location.origin; // in production, frontend & backend served via same origin
+      window.location.port === "3000"
+        ? `${window.location.protocol}//${window.location.hostname}:5001`
+        : window.location.origin;
 
     // Initialize Socket.IO client
     const newSocket = io(socketUrl, {
