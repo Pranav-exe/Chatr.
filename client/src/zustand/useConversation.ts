@@ -17,7 +17,7 @@ export interface MessageType {
 interface ConversationState {
   selectedConversation: ConversationType | null;
   setSelectedConversation: (
-    selectedConversation: ConversationType | null
+    selectedConversation: ConversationType | null,
   ) => void;
 
   messages: MessageType[];
@@ -28,6 +28,10 @@ interface ConversationState {
   unreadCounts: { [key: string]: number };
   incrementUnreadCount: (senderId: string) => void;
   clearUnreadCount: (senderId: string) => void;
+
+  typingUsers: string[];
+  setTypingUser: (senderId: string) => void;
+  removeTypingUser: (senderId: string) => void;
 }
 
 const useConversation = create<ConversationState>((set) => ({
@@ -40,9 +44,13 @@ const useConversation = create<ConversationState>((set) => ({
 
   // ✅ SAFE real-time append
   addMessage: (message) =>
-    set((state) => ({
-      messages: [...state.messages, message],
-    })),
+    set((state) => {
+      const exists = state.messages.find((m) => m._id === message._id);
+      if (exists) return state;
+      return {
+        messages: [...state.messages, message],
+      };
+    }),
 
   clearMessages: () => set({ messages: [] }),
 
@@ -62,6 +70,18 @@ const useConversation = create<ConversationState>((set) => ({
       delete newUnreadCounts[senderId];
       return { unreadCounts: newUnreadCounts };
     }),
+
+  typingUsers: [],
+  setTypingUser: (senderId) =>
+    set((state) => ({
+      typingUsers: state.typingUsers.includes(senderId)
+        ? state.typingUsers
+        : [...state.typingUsers, senderId],
+    })),
+  removeTypingUser: (senderId) =>
+    set((state) => ({
+      typingUsers: state.typingUsers.filter((id) => id !== senderId),
+    })),
 }));
 
 export default useConversation;
