@@ -1,8 +1,8 @@
 FROM node:20-alpine AS base
 WORKDIR /app
-COPY package*.json ./
+COPY client/package*.json ./
 RUN npm ci --legacy-peer-deps
-COPY . . 
+COPY client/ ./
 RUN npm run build
 
 FROM nginx:alpine AS production

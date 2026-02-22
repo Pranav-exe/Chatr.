@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useMemo } from "react";
 
 export interface AuthUser {
   _id: string;
@@ -23,7 +23,7 @@ export const useAuthContext = () => {
   return context;
 };
 
-const getStoredUser = (): AuthUser | null => {
+const getInitialUser = (): AuthUser | null => {
   try {
     const stored = localStorage.getItem("chat-user");
     return stored ? JSON.parse(stored) : null;
@@ -33,13 +33,17 @@ const getStoredUser = (): AuthUser | null => {
 };
 
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
-  const [authUser, setAuthUser] = useState<AuthUser | null>(getStoredUser());
+  const [authUser, setAuthUser] = useState<AuthUser | null>(getInitialUser());
 
-  // Sync with localStorage automatically
   useEffect(() => {
-    if (authUser) localStorage.setItem("chat-user", JSON.stringify(authUser));
-    else localStorage.removeItem("chat-user");
+    if (authUser) {
+      localStorage.setItem("chat-user", JSON.stringify(authUser));
+    } else {
+      localStorage.removeItem("chat-user");
+    }
   }, [authUser]);
 
-  return <AuthContext.Provider value={{ authUser, setAuthUser }}>{children}</AuthContext.Provider>;
+  const value = useMemo(() => ({ authUser, setAuthUser }), [authUser]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

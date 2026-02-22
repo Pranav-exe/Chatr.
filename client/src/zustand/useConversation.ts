@@ -5,6 +5,7 @@ export interface ConversationType {
   fullName: string;
   username: string;
   profilePic: string;
+  gender: "male" | "female";
   lastSeen: string;
 }
 

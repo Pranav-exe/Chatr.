@@ -7,16 +7,24 @@ services:
     volumes:
       - mongo_data:/data/db
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
       context: ./server
-      dockerfile: dockerFile
+      dockerfile: Dockerfile
     container_name: chatr_backend
+    environment:
+      - MONGO_DB_URI=mongodb://mongodb:27017/chatapp
     env_file:
       - ./server/.env
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     networks:
       - app_network
     restart: unless-stopped
@@ -24,7 +32,7 @@ services:
   nginx:
     build:
       context: .
-      dockerfile: ./client/dockerfile
+      dockerfile: client/Dockerfile
     container_name: chatr_nginx
     ports:
       - "80:80"

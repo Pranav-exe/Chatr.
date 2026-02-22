@@ -26,7 +26,7 @@ const SignUp = () => {
 		e.preventDefault();
 		await signup(inputs);
 	};
-	console.log("inputs:", inputs);
+
 
 	return (
 		<div className='flex flex-col items-center justify-center min-w-[500px] mx-auto animate-fade-in z-20'>

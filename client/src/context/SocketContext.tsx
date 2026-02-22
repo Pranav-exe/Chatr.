@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext, ReactNode } from "react";
+import { createContext, useState, useEffect, useContext, ReactNode, useMemo } from "react";
 import { useAuthContext } from "./AuthContext";
 import { io, Socket } from "socket.io-client";
 
@@ -23,44 +23,38 @@ export const SocketContextProvider = ({ children }: { children: ReactNode }) => 
   const { authUser } = useAuthContext();
 
   useEffect(() => {
-    if (!authUser) return;
+    if (!authUser) {
+      if (socket) {
+        socket.close();
+        setSocket(null);
+      }
+      return;
+    }
 
-    // Decide URL dynamically: dev vs prod
     const socketUrl =
-      window.location.port === "3000"
-        ? `${window.location.protocol}//${window.location.hostname}:5001`
+      window.location.port === "5173" || window.location.port === "3000"
+        ? "http://localhost:5001"
         : window.location.origin;
 
-    // Initialize Socket.IO client
     const newSocket = io(socketUrl, {
       query: { userId: authUser._id },
-      withCredentials: true, // important for sending cookies/JWT
-      transports: ["websocket", "polling"], // ensures stable connection
+      withCredentials: true,
+      transports: ["websocket"],
     });
 
     setSocket(newSocket);
 
-    // Listen for online users
     newSocket.on("getOnlineUsers", (users: string[]) => {
       setOnlineUsers(users);
     });
 
-    // Optional: listen for errors or connection issues
-    newSocket.on("connect_error", (err) => {
-      console.error("Socket connection error:", err);
-    });
-
-    // Cleanup on unmount or auth change
     return () => {
-      newSocket.disconnect();
+      newSocket.close();
       setSocket(null);
-      setOnlineUsers([]);
     };
   }, [authUser]);
 
-  return (
-    <SocketContext.Provider value={{ socket, onlineUsers }}>
-      {children}
-    </SocketContext.Provider>
-  );
+  const value = useMemo(() => ({ socket, onlineUsers }), [socket, onlineUsers]);
+
+  return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>;
 };

@@ -29,8 +29,32 @@ const Conversation = ({ conversation, lastIdx, emoji }: ConversationProps) => {
 				onClick={handleClick}
 			>
 				<div className={`avatar ${isOnline ? "online" : "offline"}`}>
-					<div className='w-11 rounded-full border border-white/10 group-hover:border-volt/40 transition-all duration-300 ring-2 ring-transparent group-hover:ring-volt/10'>
-						<img src={conversation.profilePic} alt='user avatar' />
+					<div className='w-11 h-11 rounded-full border border-white/10 group-hover:border-volt/40 transition-all duration-300 ring-2 ring-transparent group-hover:ring-volt/10 bg-white/5 animate-pulse overflow-hidden'>
+						<img
+							src={conversation.profilePic}
+							alt='user avatar'
+							className='w-full h-full object-cover opacity-0 transition-opacity duration-300'
+							onLoad={(e) => {
+								const target = e.target as HTMLImageElement;
+								target.parentElement?.classList.remove('animate-pulse');
+								target.classList.remove('opacity-0');
+							}}
+							onError={(e) => {
+								const target = e.target as HTMLImageElement;
+								if (!target.dataset.retried) {
+									target.dataset.retried = "true";
+									const normalizedSeed = encodeURIComponent(conversation.username.replace(/\s+/g, "_"));
+									const gender = conversation.gender === "female" ? "female" : "male";
+									target.src = gender === "male"
+										? `https://api.dicebear.com/9.x/avataaars/svg?seed=${normalizedSeed}&top=shortRound,theCaesar,shortWaved,sides,shortFlat,shavedSides&backgroundType=gradientLinear&backgroundColor=b6e3f4,c0aede,d1d4f9,a1c4fd,c2e9fb,8fd3f4,a6c0fe,d4fc79,96e6a1,84fab0,e0c3fc,8ec5fc`
+										: `https://api.dicebear.com/9.x/avataaars/svg?seed=${normalizedSeed}&top=longButNotTooLong,straight01,straight02,bigHair,bob,curly,curvy,dreads&backgroundType=gradientLinear&backgroundColor=ffdfbf,ffd5dc,d1d4f9,ff9a9e,fecfef,fbc2eb,a18cd1,f68084,fccb90,d57eeb,fad0c4,ffecd2`;
+								} else {
+									target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(conversation.fullName)}&background=random`;
+								}
+								target.parentElement?.classList.remove('animate-pulse');
+								target.classList.remove('opacity-0');
+							}}
+						/>
 					</div>
 				</div>
 

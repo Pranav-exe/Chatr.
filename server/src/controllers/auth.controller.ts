@@ -6,7 +6,8 @@ import { io } from "../socket/socket";
 
 export const signup = async (req: Request, res: Response) => {
   try {
-    const { fullName, username, password, confirmPassword, gender } = req.body;
+    const { fullName, password, confirmPassword, gender } = req.body;
+    const username = req.body.username?.trim();
 
     if (!fullName || !username || !password || !confirmPassword || !gender) {
       return res.status(400).json({ error: "Please fill in all fields" });
@@ -25,10 +26,11 @@ export const signup = async (req: Request, res: Response) => {
       await bcrypt.genSalt(10),
     );
 
+    const normalizedSeed = encodeURIComponent(username.replace(/\s+/g, "_"));
     const profilePic =
       gender === "male"
-        ? `https://avatar.iran.liara.run/public/boy?username=${username}`
-        : `https://avatar.iran.liara.run/public/girl?username=${username}`;
+        ? `https://api.dicebear.com/9.x/avataaars/svg?seed=${normalizedSeed}&top=shortRound,theCaesar,shortWaved,sides,shortFlat,shavedSides&backgroundType=gradientLinear&backgroundColor=b6e3f4,c0aede,d1d4f9,a1c4fd,c2e9fb,8fd3f4,a6c0fe,d4fc79,96e6a1,84fab0,e0c3fc,8ec5fc`
+        : `https://api.dicebear.com/9.x/avataaars/svg?seed=${normalizedSeed}&top=longButNotTooLong,straight01,straight02,bigHair,bob,curly,curvy,dreads&backgroundType=gradientLinear&backgroundColor=ffdfbf,ffd5dc,d1d4f9,ff9a9e,fecfef,fbc2eb,a18cd1,f68084,fccb90,d57eeb,fad0c4,ffecd2`;
 
     const newUser = new User({
       fullName,
@@ -46,6 +48,7 @@ export const signup = async (req: Request, res: Response) => {
       fullName: newUser.fullName,
       username: newUser.username,
       profilePic: newUser.profilePic,
+      gender: newUser.gender,
     };
 
     // Notify all connected clients about the new user
@@ -60,7 +63,8 @@ export const signup = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { username, password } = req.body;
+    const { password } = req.body;
+    const username = req.body.username?.trim();
 
     const user = await User.findOne({ username });
     if (!user)
@@ -77,6 +81,7 @@ export const login = async (req: Request, res: Response) => {
       fullName: user.fullName,
       username: user.username,
       profilePic: user.profilePic,
+      gender: user.gender,
     });
   } catch (error: any) {
     console.error("Error in login controller:", error.message);

@@ -1,6 +1,7 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 
 export interface IConversation extends Document {
+  _id: mongoose.Types.ObjectId;
   participants: mongoose.Types.ObjectId[];
   messages: mongoose.Types.ObjectId[];
   createdAt: Date;
@@ -24,12 +25,12 @@ const conversationSchema: Schema<IConversation> = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Conversation: Model<IConversation> = mongoose.model<IConversation>(
   "Conversation",
-  conversationSchema
+  conversationSchema,
 );
 
 export default Conversation;
