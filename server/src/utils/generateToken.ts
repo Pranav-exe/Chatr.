@@ -12,13 +12,13 @@ const generateTokenAndSetCookie = (
   }
 
   const token = jwt.sign({ userId: userId.toString() }, secret, {
-    expiresIn: "15d",
+    expiresIn: "1d",
   });
 
   const isDev = process.env.NODE_ENV === "development";
 
   res.cookie("jwt", token, {
-    maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
+    maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
     httpOnly: true, // cannot be accessed by JS
     sameSite: isDev ? "lax" : "strict",
     secure: !isDev, // only HTTPS in prod

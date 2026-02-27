@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useSocketContext } from "../context/SocketContext";
 import { useAuthContext } from "../context/AuthContext";
 import useConversation, { MessageType } from "../zustand/useConversation";
-import notificationSound from "../assets/sounds/notification.mp3";
+import { notificationService } from "../services/notificationService";
 
 const useListenMessages = () => {
   const { socket } = useSocketContext();
@@ -21,17 +21,24 @@ const useListenMessages = () => {
     if (!socket) return;
 
     const handleNewMessage = (newMessage: MessageType) => {
-      // If the message is from me, don't play sound or shake (handled locally in useSendMessage)
-      // But we still call addMessage just in case it's from another tab
-      if (newMessage.senderId !== authUser?._id) {
+      // Logic for playing notification sound
+      const isFromOtherUser = newMessage.senderId !== authUser?._id;
+      const isNotInActiveChat =
+        selectedConversation?._id !== newMessage.senderId;
+      const isAppHidden = document.visibilityState === "hidden";
+
+      if (isFromOtherUser) {
         newMessage.shouldShake = true;
-        const sound = new Audio(notificationSound);
-        sound.play();
+
+        // Only play sound if user is not looking at the chat or the app is hidden
+        if (isNotInActiveChat || isAppHidden) {
+          notificationService.play();
+        }
       }
 
       if (selectedConversation?._id === newMessage.senderId) {
         addMessage(newMessage);
-      } else if (newMessage.senderId !== authUser?._id) {
+      } else if (isFromOtherUser) {
         // Only increment unread if it's NOT from me
         incrementUnreadCount(newMessage.senderId);
       }

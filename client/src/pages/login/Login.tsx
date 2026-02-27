@@ -21,7 +21,7 @@ const Login = () => {
 				<h1 className='text-6xl font-[900] text-center text-white mb-2 tracking-tighter uppercase brand-font'>
 					CHATR<span className='text-volt'>.</span>
 				</h1>
-				<p className='text-center text-white/30 text-[11px] mb-12 font-semibold tracking-[0.3em] uppercase'>Initialize Secure Session</p>
+
 
 				<form onSubmit={handleSubmit} className='space-y-7'>
 					<div className='space-y-2'>

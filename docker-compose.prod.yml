@@ -2,52 +2,45 @@ services:
   mongodb:
     image: mongo:7
     container_name: chatr_mongodb
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
     networks:
       - app_network
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
       context: ./server
       dockerfile: Dockerfile
-      target: development
     container_name: chatr_backend
-    volumes:
-      - ./server:/app
-      - /app/node_modules
     environment:
       - MONGO_DB_URI=mongodb://mongodb:27017/chatapp
     env_file:
       - ./server/.env
     depends_on:
-      - mongodb
-    ports:
-      - "5001:5001"
-    stdin_open: true
-    tty: true
+      mongodb:
+        condition: service_healthy
     networks:
       - app_network
+    restart: unless-stopped
 
-  client:
+  nginx:
     build:
       context: .
       dockerfile: client/Dockerfile
-      target: development
-    container_name: chatr_client
-    volumes:
-      - ./client:/app
-      - /app/node_modules
-    stdin_open: true
-    tty: true
+    container_name: chatr_nginx
     ports:
-      - "3000:3000"
+      - "80:80"
     depends_on:
       - backend
     networks:
       - app_network
+    restart: unless-stopped
 
 volumes:
   mongo_data:

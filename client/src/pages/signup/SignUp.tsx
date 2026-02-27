@@ -37,7 +37,7 @@ const SignUp = () => {
 				<h1 className='text-6xl font-[900] text-center text-white mb-2 tracking-tighter uppercase brand-font'>
 					CHATR<span className='text-volt'>.</span>
 				</h1>
-				<p className='text-center text-white/30 text-[11px] mb-10 font-semibold tracking-[0.3em] uppercase'>Join the secure evolution</p>
+
 
 				<form onSubmit={handleSubmit} className='space-y-6'>
 					<div className='grid grid-cols-2 gap-5'>
