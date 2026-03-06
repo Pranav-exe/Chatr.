@@ -41,13 +41,13 @@ const Conversation = ({ conversation, lastIdx, emoji }: ConversationProps) => {
 	return (
 		<>
 			<div
-				className={`flex gap-4 items-center hover:bg-white/[0.04] rounded-2xl p-3 cursor-pointer transition-all duration-300 group relative
-				${isSelected ? "bg-white/[0.06] border border-white/5 volt-glow-sm" : "border border-transparent"}
+				className={`flex gap-4 items-center hover:bg-white/[0.03] rounded-[1.25rem] p-3.5 cursor-pointer transition-all duration-500 group relative
+				${isSelected ? "bg-white/[0.05] border border-white/5 shadow-xl scale-[1.02]" : "border border-transparent"}
 			`}
 				onClick={handleClick}
 			>
-				<div className={`avatar ${isOnline ? "online" : "offline"}`}>
-					<div className='w-11 h-11 rounded-full border border-white/10 group-hover:border-volt/40 transition-all duration-300 ring-2 ring-transparent group-hover:ring-volt/10 bg-white/5 animate-pulse overflow-hidden'>
+				<div className={`avatar ${isOnline ? "online" : "offline"} ${isOnline ? "glow-online" : ""}`}>
+					<div className={`w-11 h-11 rounded-full border border-white/10 group-hover:border-volt/30 transition-all duration-500 ring-4 ring-transparent group-hover:ring-volt/5 bg-white/5 animate-pulse overflow-hidden ${isOnline ? 'status-online' : ''}`}>
 						<img
 							src={conversation.profilePic}
 							alt='user avatar'

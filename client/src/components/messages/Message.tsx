@@ -16,8 +16,8 @@ const Message = ({ message }: MessageProps) => {
 	const profilePic = fromMe ? authUser?.profilePic : selectedConversation?.profilePic;
 	// Balanced dual-tone system: dimmed volt but still highlighted
 	const bubbleClasses = fromMe
-		? "bg-volt/30 border border-volt/40 text-white font-medium rounded-2xl rounded-tr-none px-4 py-2.5 shadow-[0_8px_20px_-5px_rgba(204,255,0,0.15)]"
-		: "bg-[#1a1a1e] border border-white/10 text-white/95 rounded-2xl rounded-tl-none px-4 py-2.5 shadow-lg relative after:absolute after:inset-0 after:rounded-2xl after:bg-white/[0.02]";
+		? "chat-bubble-me text-white font-medium rounded-2xl rounded-tr-none px-4 py-2.5"
+		: "chat-bubble-other text-white/90 rounded-2xl rounded-tl-none px-4 py-2.5 relative after:absolute after:inset-0 after:rounded-2xl after:bg-white/[0.01]";
 
 	const shakeClass = message.shouldShake ? "shake" : "";
 

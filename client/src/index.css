@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700;900&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -7,26 +7,39 @@
 :root {
   color-scheme: dark;
   --bg-main: #0a0a0c;
-  --bg-sidebar: #121215;
-  --bg-chat: #0e0e11;
-  --bg-header: #16161a;
+  --bg-sidebar: #111114;
+  --bg-chat: #0d0d10;
+  --bg-panel: rgba(18, 18, 22, 0.8);
   --volt: #ccff00;
-  --volt-muted: rgba(204, 255, 0, 0.4);
+  --volt-glow: rgba(204, 255, 0, 0.5);
+  --volt-border: rgba(204, 255, 0, 0.2);
+  --glass-border: rgba(255, 255, 255, 0.05);
 }
 
 body {
   background: var(--bg-main);
   background-image:
-    radial-gradient(at 0% 0%, rgba(204, 255, 0, 0.05) 0, transparent 40%),
-    radial-gradient(at 100% 0%, rgba(60, 60, 60, 0.08) 0, transparent 40%),
-    radial-gradient(at 50% 100%, rgba(204, 255, 0, 0.03) 0, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(204, 255, 0, 0.04) 0px, transparent 45%),
+    radial-gradient(at 100% 0%, rgba(100, 100, 100, 0.06) 0px, transparent 40%),
+    radial-gradient(at 50% 100%, rgba(204, 255, 0, 0.02) 0px, transparent 50%);
   background-attachment: fixed;
   min-height: 100vh;
-  font-family: "Inter", sans-serif;
-  color: #e2e8f0;
   margin: 0;
   padding: 0;
   overflow: hidden;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #f8fafc;
+  letter-spacing: -0.01em;
 }
 
 h1,
@@ -34,111 +47,58 @@ h2,
 h3,
 .brand-font {
   font-family: "Outfit", sans-serif;
+  letter-spacing: -0.04em;
+  font-weight: 900;
 }
 
-/* Master Glass System */
+.brand-glow-refined {
+  text-shadow:
+    0 0 10px rgba(204, 255, 0, 0.3),
+    0 0 20px rgba(204, 255, 0, 0.15);
+  color: #fff !important;
+}
+
+.logo-symbol {
+  background: var(--volt);
+  color: #000;
+  box-shadow: 0 0 30px rgba(204, 255, 0, 0.5);
+  font-weight: 900;
+}
+
+/* Advanced Glassmorphism */
 .glass-panel {
-  background: rgba(18, 18, 21, 0.7) !important;
-  backdrop-filter: blur(32px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.05) !important;
-}
-
-.glass-sidebar {
-  background: var(--bg-sidebar) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
+  background: var(--bg-panel);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 .glass-chat {
-  background: var(--bg-chat) !important;
+  background: var(--bg-chat);
   position: relative;
 }
 
 .secondary-glass {
-  background: var(--bg-header) !important;
-  backdrop-filter: blur(12px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  background: rgba(13, 13, 16, 0.6) !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
 }
 
-/* Chat Wallpaper Pattern */
+/* Refined Chat Wallpaper */
 .chat-pattern {
   position: absolute;
   inset: 0;
-  opacity: 0.06;
-  background-image: radial-gradient(
-    rgba(204, 255, 0, 0.1) 1px,
-    transparent 1px
-  );
-  background-size: 32px 32px;
+  opacity: 0.04;
+  background-image: radial-gradient(var(--volt) 0.5px, transparent 0.5px);
+  background-size: 24px 24px;
   pointer-events: none;
   z-index: 0;
 }
 
-.chat-pattern::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.01) 0.5px, transparent 0.5px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.01) 0.5px, transparent 0.5px);
-  background-size: 128px 128px;
-}
-
-/* Accents & States */
-.volt-accent {
-  background: var(--volt);
-  color: #000000;
-}
-
-.volt-text {
-  color: var(--volt);
-}
-
-.volt-border {
-  border-color: var(--volt-muted) !important;
-}
-
-.volt-glow-sm {
-  box-shadow: 0 0 20px rgba(204, 255, 0, 0.08);
-}
-
-.volt-text-glow {
-  text-shadow: 0 0 10px rgba(204, 255, 0, 0.4);
-}
-
-/* Typing Indicator Dots */
-.typing-dot {
-  width: 6px;
-  height: 6px;
-  background: var(--volt);
-  border-radius: 50%;
-  opacity: 0.4;
-  animation: typing-bounce 1.4s infinite ease-in-out;
-}
-
-.typing-dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.typing-dot:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes typing-bounce {
-  0%,
-  80%,
-  100% {
-    transform: scale(0.6);
-    opacity: 0.4;
-  }
-  40% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* Scrollbar Refinement */
+/* Smooth Scrollbars */
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -146,98 +106,151 @@ h3,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
 }
 
-/* Soft Deco Blobs */
-.blob {
-  position: absolute;
-  width: 900px;
-  height: 900px;
-  filter: blur(140px);
-  border-radius: 50%;
-  z-index: -1;
-  opacity: 0.4;
-  pointer-events: none;
+/* Aesthetic Components */
+.btn-primary {
+  background: var(--volt) !important;
+  color: #000000 !important;
+  border: none !important;
+  font-weight: 700 !important;
+  font-size: 0.875rem !important;
+  letter-spacing: -0.01em !important;
+  border-radius: 12px !important;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 4px 20px rgba(204, 255, 0, 0.1);
 }
 
-.blob-primary {
-  background: radial-gradient(
-    circle,
-    rgba(204, 255, 0, 0.04) 0%,
-    transparent 70%
-  );
-  top: -10%;
-  left: -5%;
-  animation: blob-float-slow 25s infinite alternate ease-in-out;
+.btn-primary:not(:disabled):hover {
+  background: #d9ff33 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(204, 255, 0, 0.3);
 }
 
-.blob-secondary {
-  background: radial-gradient(
-    circle,
-    rgba(100, 100, 100, 0.05) 0%,
-    transparent 70%
-  );
-  bottom: -5%;
-  right: -5%;
-  animation: blob-float-slow 30s infinite alternate-reverse ease-in-out;
+.btn-primary:active {
+  transform: translateY(0);
 }
 
-@keyframes blob-float-slow {
+.input {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 14px !important;
+  color: white !important;
+  font-size: 0.875rem !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.input:focus {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: var(--volt-border) !important;
+  box-shadow: 0 0 0 2px rgba(204, 255, 0, 0.05) !important;
+  outline: none !important;
+}
+
+/* Shimmer/Bloom Animations */
+@keyframes shimmer {
   0% {
-    transform: translate(0, 0) scale(1);
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
   }
   100% {
-    transform: translate(30px, 40px) scale(1.05);
+    opacity: 0.4;
+    transform: scale(1);
   }
+}
+
+.volt-glow-sm {
+  box-shadow: 0 0 40px rgba(204, 255, 0, 0.06);
 }
 
 /* Animations */
 .animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
+  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: scale(0.98);
+    transform: translateY(10px) scale(0.99);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
-/* DaisyUI Overrides */
-.btn-primary {
-  background: #ccff00 !important;
-  color: #000000 !important;
-  border: none !important;
-  font-weight: 700 !important;
-  letter-spacing: -0.01em !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.btn-primary:hover {
-  background: #d9ff33 !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(204, 255, 0, 0.2);
+.animate-slide-up {
+  animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.input {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  border-radius: 12px !important;
-  transition: all 0.3s ease !important;
+/* User Status Indicator */
+.status-indicator {
+  transition: all 0.3s ease;
 }
 
-.input:focus {
-  border-color: rgba(204, 255, 0, 0.4) !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-  outline: none !important;
+.status-online {
+  background: var(--volt) !important;
+  box-shadow: 0 0 8px var(--volt-glow);
+}
+
+.profile-glow {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glow-online {
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(204, 255, 0, 0.15);
+  animation: pulse-glow 3s infinite ease-in-out;
+  position: relative;
+}
+
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 10px rgba(204, 255, 0, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(204, 255, 0, 0.25);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(204, 255, 0, 0.1);
+  }
+}
+
+/* Chat Bubbles Depth */
+.chat-bubble-me {
+  background: linear-gradient(
+    135deg,
+    rgba(204, 255, 0, 0.2) 0%,
+    rgba(204, 255, 0, 0.08) 100%
+  );
+  border: 1px solid var(--volt-border);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+.chat-bubble-other {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
 }

@@ -28,15 +28,12 @@ const SearchInput = () => {
 				<input
 					type='text'
 					placeholder='Search friends...'
-					className='w-full input h-12 px-10 text-xs font-medium'
+					className='w-full input h-12 pl-12 pr-4 text-[0.85rem] font-medium tracking-tight bg-white/[0.02] border-white/5 group-focus-within:border-volt/20 group-focus-within:bg-white/[0.04]'
 					value={searchQuery}
 					onChange={(e) => setSearchQuery(e.target.value)}
 				/>
-				<IoSearchSharp className='absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-volt transition-colors duration-300' />
+				<IoSearchSharp className='absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-white/10 group-focus-within:text-volt transition-all duration-500' />
 			</div>
-			{/* <button type='submit' className='btn btn-primary h-12 w-12 min-h-0 rounded-xl flex items-center justify-center p-0'>
-				<IoSearchSharp className='w-5 h-5' />
-			</button> */}
 		</form>
 	);
 };

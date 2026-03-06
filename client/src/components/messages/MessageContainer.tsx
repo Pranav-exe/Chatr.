@@ -38,7 +38,7 @@ const MessageContainer = () => {
 							>
 								<IoArrowBack size={24} />
 							</button>
-							<div className="w-11 h-11 rounded-full border border-white/10 p-0.5 glow-volt-subtle bg-white/5 animate-pulse overflow-hidden">
+							<div className={`w-11 h-11 rounded-full border border-white/5 p-0.5 bg-white/5 animate-pulse overflow-hidden transition-all duration-500 ${isOnline ? "glow-online border-volt" : "border-white/10"}`}>
 								<img
 									src={selectedConversation.profilePic}
 									alt=""
@@ -120,7 +120,7 @@ const NoChatSelected = () => {
 					<p className="text-2xl md:text-3xl tracking-tighter font-light text-white/40">
 						Hello, Welcome to
 					</p>
-					<h2 className="text-4xl md:text-6xl font-[900] tracking-tighter uppercase brand-font">
+					<h2 className="text-4xl md:text-6xl font-[900] tracking-tighter uppercase brand-font brand-glow-refined">
 						CHATR<span className="text-volt">.</span>
 					</h2>
 				</div>

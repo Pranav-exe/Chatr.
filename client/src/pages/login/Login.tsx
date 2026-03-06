@@ -18,8 +18,8 @@ const Login = () => {
 			<div className='w-full p-10 rounded-[2.5rem] glass-panel volt-glow-sm shadow-2xl relative overflow-hidden'>
 
 
-				<p className='text-[10px] font-bold text-white/20 tracking-[0.5em] uppercase text-center mb-1'>Hello</p>
-				<h1 className='text-6xl font-[900] text-center text-white mb-2 tracking-tighter uppercase brand-font'>
+
+				<h1 className='text-6xl font-[900] text-center text-white mb-2 tracking-tighter uppercase brand-font brand-glow-refined'>
 					CHATR<span className='text-volt'>.</span>
 				</h1>
 

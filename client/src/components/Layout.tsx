@@ -19,12 +19,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
             {/* Navigation Header */}
             <header className="w-full h-20 glass-panel border-b border-white/5 px-8 flex items-center justify-between z-50">
-                <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                    <div className="w-10 h-10 rounded-xl volt-accent flex items-center justify-center font-black text-black text-xl shadow-[0_0_15px_rgba(204,255,0,0.2)]">
+                <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-all duration-300 transform hover:scale-[1.02]">
+                    <div className="w-10 h-10 rounded-xl logo-symbol flex items-center justify-center text-xl">
                         C
                     </div>
-                    <span className="brand-font text-3xl font-[900] tracking-tighter text-white uppercase">
-                        Chatr<span className="volt-text">.</span>
+                    <span className="brand-font text-3xl font-[900] tracking-tighter text-white uppercase brand-glow-refined">
+                        CHATR<span className="text-volt">.</span>
                     </span>
                 </Link>
 
@@ -47,7 +47,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 {children}
             </main>
 
-
+            {/* Footer Attribution */}
+            <footer className="w-full flex justify-center items-center py-5 select-none z-10">
+                <p className="text-[10px] font-bold tracking-[0.6em] uppercase text-white/10 hover:text-volt/60 transition-all duration-700 cursor-default">
+                    Crafted by Pranav Sharma
+                </p>
+            </footer>
         </div>
     );
 };

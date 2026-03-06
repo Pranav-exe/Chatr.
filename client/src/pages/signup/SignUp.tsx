@@ -34,7 +34,7 @@ const SignUp = () => {
 
 				<div className='absolute -bottom-24 -left-24 w-48 h-48 bg-volt/[0.03] rounded-full blur-3xl'></div>
 
-				<h1 className='text-6xl font-[900] text-center text-white mb-2 tracking-tighter uppercase brand-font'>
+				<h1 className='text-6xl font-[900] text-center text-white mb-2 tracking-tighter uppercase brand-font brand-glow-refined'>
 					CHATR<span className='text-volt'>.</span>
 				</h1>
 
