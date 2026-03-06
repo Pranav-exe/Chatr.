@@ -20,14 +20,34 @@ services:
       - /app/node_modules
     environment:
       - MONGO_DB_URI=mongodb://mongodb:27017/chatapp
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     env_file:
       - ./server/.env
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_started   # Just wait for Mongo to start
+      redis:
+        condition: service_healthy   # Wait until Redis passes its healthcheck
     ports:
       - "5001:5001"
     stdin_open: true
     tty: true
+    networks:
+      - app_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: chatr_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data                      # Persist data across restarts
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]      # Ask Redis: "are you alive?"
+      interval: 5s                            # Check every 5 seconds
+      timeout: 3s                             # Wait max 3s for a response
+      retries: 5                              # Try 5 times before giving up
     networks:
       - app_network
 
@@ -51,6 +71,7 @@ services:
 
 volumes:
   mongo_data:
+  redis_data:                              # Named volume for Redis persistence
 
 networks:
   app_network:

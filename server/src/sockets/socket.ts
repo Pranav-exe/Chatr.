@@ -3,6 +3,8 @@ import express, { Application } from "express";
 import { Server, Socket } from "socket.io";
 import dotenv from "dotenv";
 import User from "../models/user.model";
+import { createAdapter } from "@socket.io/redis-adapter";
+import redisClient from "../utils/redis";
 
 dotenv.config();
 
@@ -21,6 +23,40 @@ const io = new Server(server, {
   },
 });
 
+/**
+ * REDIS ADAPTER INTEGRATION
+ * Why? This allows us to scale Chatr to multiple server instances.
+ * Any event emitted on Server A will be sent to Redis, which then
+ * broadcasts it to all other connected Chatr servers.
+ */
+const setupRedisAdapter = async () => {
+  try {
+    if (!redisClient.isOpen) {
+      await redisClient.connect();
+    }
+
+    // The adapter needs two separate connections to Redis:
+    // 1. One for Publishing (sending)
+    // 2. One for Subscribing (receiving)
+    const pubClient = redisClient.duplicate();
+    const subClient = redisClient.duplicate();
+
+    await Promise.all([pubClient.connect(), subClient.connect()]);
+
+    io.adapter(createAdapter(pubClient, subClient));
+    console.log(
+      "\x1b[32m[Socket]\x1b[0m Redis adapter integrated successfully",
+    );
+  } catch (err) {
+    console.error(
+      "\x1b[31m[Socket Error]\x1b[0m Failed to setup Redis adapter:",
+      err,
+    );
+  }
+};
+
+setupRedisAdapter();
+
 interface UserSocketMap {
   [userId: string]: string;
 }
@@ -30,8 +66,13 @@ const userSocketMap: UserSocketMap = {};
 export const getReceiverSocketId = (receiverId: string) =>
   userSocketMap[receiverId];
 
-const broadcastOnlineUsers = () => {
-  io.emit("getOnlineUsers", Object.keys(userSocketMap));
+const broadcastOnlineUsers = async () => {
+  try {
+    const users = await redisClient.sMembers("online_users");
+    io.emit("getOnlineUsers", users);
+  } catch (err) {
+    console.error("Redis Error in broadcastOnlineUsers:", err);
+  }
 };
 
 io.on("connection", (socket: Socket) => {
@@ -42,7 +83,11 @@ io.on("connection", (socket: Socket) => {
     console.log(
       `\x1b[32m[Socket]\x1b[0m User connected: ${userId} (${socket.id})`,
     );
-    broadcastOnlineUsers();
+
+    // Add user to Redis Set for global tracking
+    redisClient.sAdd("online_users", userId).then(() => {
+      broadcastOnlineUsers();
+    });
   }
 
   socket.on("typing", ({ receiverId }: { receiverId: string }) => {
@@ -68,17 +113,20 @@ io.on("connection", (socket: Socket) => {
         const lastSeen = new Date();
         await User.findByIdAndUpdate(userId, { lastSeen });
 
+        // Remove user from Redis Set
+        await redisClient.sRem("online_users", userId);
+
         // Notify others of status change
         io.emit("userStatusUpdate", {
           userId,
           isOnline: false,
           lastSeen: lastSeen.toISOString(),
         });
-      } catch (error) {
-        console.error("Error updating lastSeen:", error);
-      }
 
-      broadcastOnlineUsers();
+        broadcastOnlineUsers();
+      } catch (error) {
+        console.error("Error during disconnect cleanup:", error);
+      }
     }
   });
 });

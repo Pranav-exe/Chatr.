@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import User from "../models/user.model";
 import generateTokenAndSetCookie from "../utils/generateToken";
-import { io } from "../socket/socket";
+import { io } from "../sockets/socket";
 
 export const signup = async (req: Request, res: Response) => {
   try {

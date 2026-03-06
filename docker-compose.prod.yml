@@ -1,7 +1,7 @@
 services:
   mongodb:
     image: mongo:7
-    container_name: chatr_mongodb
+    container_name: chatr_mongodb_prod
     networks:
       - app_network
     volumes:
@@ -13,37 +13,63 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: chatr_redis_prod
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_network
+
   backend:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: chatr_backend
-    environment:
-      - MONGO_DB_URI=mongodb://mongodb:27017/chatapp
+      target: production
+    container_name: chatr_backend_prod
+    restart: unless-stopped
     env_file:
-      - ./server/.env
+      - ./server/.env                 # Loads JWT_SECRET and PORT from .env first
+    environment:
+      # These override the .env defaults for the Docker/prod context:
+      - MONGO_DB_URI=mongodb://mongodb:27017/chatapp
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - NODE_ENV=production
+      # IMPORTANT: Replace with your real domain/IP when you deploy to cloud
+      # e.g. https://chatr.yourdomain.com  or  http://YOUR_SERVER_IP
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost
     depends_on:
       mongodb:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - app_network
-    restart: unless-stopped
 
   nginx:
     build:
       context: .
       dockerfile: client/Dockerfile
-    container_name: chatr_nginx
+      target: production              # Uses the nginx stage in your Dockerfile
+    container_name: chatr_nginx_prod
+    restart: unless-stopped
     ports:
-      - "80:80"
+      - "80:80"                       # Only nginx is exposed to the internet
     depends_on:
       - backend
     networks:
       - app_network
-    restart: unless-stopped
 
 volumes:
   mongo_data:
+  redis_data:
 
 networks:
   app_network:

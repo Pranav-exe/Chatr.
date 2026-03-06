@@ -15,7 +15,8 @@ import authRoutes from "./routes/auth.routes";
 import messageRoutes from "./routes/message.routes";
 import userRoutes from "./routes/user.routes";
 import connectToMongoDB from "./db/connectToMongoDB";
-import { app, server } from "./socket/socket";
+import { connectRedis } from "./utils/redis";
+import { app, server } from "./sockets/socket";
 
 /**
  * Middleware
@@ -74,7 +75,7 @@ app.get("/api/health", (req: Request, res: Response) => {
  */
 const startServer = async () => {
   try {
-    await connectToMongoDB();
+    await Promise.all([connectToMongoDB(), connectRedis()]);
     server.listen(Number(PORT), "0.0.0.0", () => {
       console.log(`\x1b[32m[Server]\x1b[0m Running on http://0.0.0.0:${PORT}`);
       console.log(`\x1b[34m[Env]\x1b[0m Mode: ${NODE_ENV}`);
