@@ -86,7 +86,7 @@ const MessageContainer = () => {
 										className={`text-[10px] font-black uppercase tracking-widest ${isOnline ? "text-volt opacity-80" : "text-white/40"}`}
 									>
 										{isOnline
-											? "Active Session"
+											? "Online"
 											: `Last seen ${formatLastSeen(selectedConversation.lastSeen)}`}
 									</span>
 								</div>
@@ -95,7 +95,7 @@ const MessageContainer = () => {
 						<div className="hidden sm:block">
 							<div className="px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/5">
 								<span className="text-[10px] text-white/40 font-bold uppercase tracking-widest">
-									Encryption: Peer-to-Peer
+									Secure & Private Connection
 								</span>
 							</div>
 						</div>
@@ -118,7 +118,7 @@ const NoChatSelected = () => {
 			<div className="p-6 md:p-8 text-center flex flex-col items-center gap-4 md:gap-6 animate-slide-up z-10">
 				<div className="flex flex-col gap-1 md:gap-2">
 					<p className="text-2xl md:text-3xl tracking-tighter font-light text-white/40">
-						Welcome to
+						Hello, Welcome to
 					</p>
 					<h2 className="text-4xl md:text-6xl font-[900] tracking-tighter uppercase brand-font">
 						CHATR<span className="text-volt">.</span>
@@ -126,7 +126,7 @@ const NoChatSelected = () => {
 				</div>
 				<div className="h-[1px] w-8 md:w-12 bg-white/10"></div>
 				<p className="text-white/30 text-[9px] md:text-[11px] font-semibold tracking-[0.2em] md:tracking-[0.3em] uppercase">
-					Initialize a secure connection
+					Select a friend to start chatting
 				</p>
 				<div className="p-8 md:p-10 rounded-[2rem] md:rounded-[2.5rem] bg-white/[0.02] border border-white/5 mt-2 md:mt-4 transition-all duration-700 hover:border-volt/20 hover:bg-white/[0.04]">
 					<TiMessages className="text-4xl md:text-6xl text-white/10" />

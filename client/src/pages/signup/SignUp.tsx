@@ -47,7 +47,7 @@ const SignUp = () => {
 							</label>
 							<input
 								type='text'
-								placeholder='John Doe'
+								placeholder=''
 								className='w-full input h-14 px-5 text-sm font-medium'
 								value={inputs.fullName}
 								onChange={(e) => setInputs({ ...inputs, fullName: e.target.value })}
@@ -55,11 +55,11 @@ const SignUp = () => {
 						</div>
 						<div className='space-y-2'>
 							<label className='px-1'>
-								<span className='text-[10px] font-bold text-white/20 tracking-[0.2em] uppercase'>Identity</span>
+								<span className='text-[10px] font-bold text-white/20 tracking-[0.2em] uppercase'>Username</span>
 							</label>
 							<input
 								type='text'
-								placeholder='Username'
+								placeholder=''
 								className='w-full input h-14 px-5 text-sm font-medium'
 								value={inputs.username}
 								onChange={(e) => setInputs({ ...inputs, username: e.target.value })}
@@ -70,7 +70,7 @@ const SignUp = () => {
 					<div className='grid grid-cols-2 gap-5'>
 						<div className='space-y-2'>
 							<label className='px-1'>
-								<span className='text-[10px] font-bold text-white/20 tracking-[0.2em] uppercase'>Passkey</span>
+								<span className='text-[10px] font-bold text-white/20 tracking-[0.2em] uppercase'>Password</span>
 							</label>
 							<input
 								type='password'
@@ -82,7 +82,7 @@ const SignUp = () => {
 						</div>
 						<div className='space-y-2'>
 							<label className='px-1'>
-								<span className='text-[10px] font-bold text-white/20 tracking-[0.2em] uppercase'>Verify</span>
+								<span className='text-[10px] font-bold text-white/20 tracking-[0.2em] uppercase'>Confirm</span>
 							</label>
 							<input
 								type='password'
@@ -103,14 +103,14 @@ const SignUp = () => {
 							className='btn btn-primary h-14 w-full rounded-2xl text-[15px]'
 							disabled={loading}
 						>
-							{loading ? <span className='loading loading-spinner'></span> : "INITIALIZE ACCOUNT"}
+							{loading ? <span className='loading loading-spinner'></span> : "JOIN THE CONVERSATION"}
 						</button>
 
 						<Link
 							to='/login'
 							className='text-[11px] text-white/30 hover:text-volt text-center block transition-all duration-300 font-bold tracking-[0.1em] uppercase'
 						>
-							Return to login portal
+							Already have an account? Login here
 						</Link>
 					</div>
 				</form>

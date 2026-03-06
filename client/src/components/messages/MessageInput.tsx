@@ -52,7 +52,7 @@ const MessageInput = () => {
 					<input
 						type='text'
 						className='w-full input h-14 px-6 text-[0.95rem] font-medium'
-						placeholder='Draft a secure message...'
+						placeholder='Type a message...'
 						value={message}
 						onChange={handleInputChange}
 					/>

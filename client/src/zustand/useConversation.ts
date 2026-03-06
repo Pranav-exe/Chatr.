@@ -43,6 +43,9 @@ interface ConversationState {
   typingUsers: string[];
   setTypingUser: (senderId: string) => void;
   removeTypingUser: (senderId: string) => void;
+
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
 }
 
 const useConversation = create<ConversationState>((set) => ({
@@ -114,6 +117,9 @@ const useConversation = create<ConversationState>((set) => ({
     set((state) => ({
       typingUsers: state.typingUsers.filter((id) => id !== senderId),
     })),
+
+  searchQuery: "",
+  setSearchQuery: (searchQuery) => set({ searchQuery }),
 }));
 
 export default useConversation;

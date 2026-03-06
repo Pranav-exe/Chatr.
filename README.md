@@ -1,69 +1,105 @@
-# Chatr. - The Ultimate Communication Platform
+# Chatr. - The Ultimate Social Media Chat App
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)
 ![Author](https://img.shields.io/badge/author-Pranav%20Sharma-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Status](https://img.shields.io/badge/status-Production%20Ready-success.svg)
+![Status](https://img.shields.io/badge/status-DevOps%20Ready-success.svg)
 
-**Chatr.** is a next-generation real-time messaging application designed with a premium, glassmorphic UI and a robust, scalable backend. Reimagined and built by **Pranav Sharma**, this project serves as a masterclass in modern Full-Stack development and DevOps principals.
+**Chatr.** is a high-performance, real-time social messaging application featuring a premium "Namaste" Indian touch. Built for scale, it integrates a sophisticated MERN stack with Redis Pub/Sub for horizontal scaling and is fully orchestrated with Docker and Kubernetes.
+
+---
 
 ## 🚀 Key Features
 
-### 💎 "Ultimate Edition" UI/UX
-- **Glassmorphism Architecture**: A deep, obsidian-based design system with 32px blur panels and high-fidelity gradients.
-- **Asymmetric Chat Bubbles**: Telegram-inspired message layouts for maximum readability and style.
-- **High-Performance Animations**: Optimized framer-motion transitions that feel instant on any device.
-- **Micro-Interactions**: Subtle volt-glow effects and responsive feedback loops.
+### 🇮🇳 Friendly "Indian Touch" UI
+- **Namaste Greetings**: Welcoming users with cultural warmth on login and home screens.
+- **Localized Copy**: Social-media-friendly terminology (e.g., "Join the Conversation", "Online", "Secure Connection").
+- **Real-time Search**: Live filtering of friends in the sidebar with instant highlighting.
 
-### 🛡️ Secure & Scalable Backend
-- **Real-Time Engine**: Powered by Socket.io for millisecond-latency messaging.
-- **JWT Authentication**: Secure, stateless authentication with HttpOnly cookies.
-- **MongoDB Cluster**: Scalable schema design optimized for high-volume chat logs.
-- **DevOps Ready**: Built-in health checks (`/api/health`), structured logging (`Morgan`), and container-ready architecture.
+### 💎 Premium Glassmorphism UI/UX
+- **Obsidion Design System**: 32px blur panels, high-fidelity gradients, and volt-glow micro-interactions.
+- **Fluid Layouts**: Asymmetric chat bubbles and optimized Framer Motion transitions.
+
+### 🏗️ Scalable Infrastructure (DevOps)
+- **Redis Pub/Sub**: Integrated Socket.io Redis adapter for multi-instance scaling and global state management.
+- **Docker Orchestration**: Multi-stage production builds with separate environments for Development and Production.
+- **Kubernetes Ready**: Full manifest suite (Deployments, Services, ConfigMaps, Secrets, PVCs) for local Minikube or Cloud (GKE) deployments.
+- **Health Monitoring**: Built-in `/api/health` endpoints for orchestration readiness.
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React, TypeScript, TailwindCSS, Zustand, Framer Motion
-- **Backend**: Node.js, Express, Socket.io, Mongoose
-- **DevOps**: Docker-Ready, Health Monitoring, Structured Logging
+- **Frontend**: React 18, TypeScript, TailwindCSS, Zustand, Framer Motion
+- **Backend**: Node.js, Express, Socket.io (with Redis Adapter)
+- **Database**: MongoDB (Mongoose)
+- **Cache/PubSub**: Redis
+- **Infra**: Docker, Docker Compose, Kubernetes (Minikube)
 
-## ⚡️ Quick Start
+---
+
+## ⚡️ Quick Start (Local Docker)
 
 ### Prerequisites
-- Node.js 18+
-- MongoDB
+- Docker & Docker Compose
+- Node.js 18+ (for local scripts)
 
-### Installation
+### Installation & Run
 
-1. **Clone the repository** (or download source)
+1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/chatr-ultimate.git
+   git clone https://github.com/Pranav-exe/Chatr..git
+   cd Chatr.
    ```
 
-2. **Install Dependencies**
+2. **Setup Environment**
+   Copy the example environment template:
    ```bash
-   npm install
+   cp server/.env.example server/.env
+   # Open .env and add your MONGO_DB_URI and a secure JWT_SECRET
    ```
 
-3. **Configure Environment**
-   Create a `.env` file in the root directory:
-   ```env
-   PORT=5001
-   MONGO_DB_URI=your_mongodb_uri
-   JWT_SECRET=your_super_secret_key
-   NODE_ENV=development
-   ```
-
-4. **Run Development Server**
+3. **Spin up with Docker Compose**
    ```bash
-   npm run dev
+   # Development Mode (Hot Reload)
+   docker compose up --build
+
+   # Production Mode
+   docker compose -f docker-compose.prod.yml up --build
    ```
+
+---
+
+## ☸️ Kubernetes Deployment (Minikube)
+
+1. **Start Minikube**
+   ```bash
+   minikube start
+   ```
+
+2. **Connect Docker to Minikube**
+   ```bash
+   eval $(minikube docker-env)
+   ```
+
+3. **Build Images**
+   ```bash
+   docker build -t chatr-backend:k8s ./server
+   docker build -t chatr-client:k8s -f ./client/Dockerfile .
+   ```
+
+4. **Apply Manifests**
+   ```bash
+   kubectl apply -f kubernetes/
+   ```
+
+---
 
 ## 👨‍💻 Developer
 
 **Pranav Sharma**
 - *Full Stack Engineer & DevOps Enthusiast*
-- Building scalable architectures and premium user experiences.
+- Building scalable architectures with a premium touch.
 
 ---
 

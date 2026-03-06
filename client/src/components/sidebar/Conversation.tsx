@@ -8,12 +8,30 @@ interface ConversationProps {
 }
 
 const Conversation = ({ conversation, lastIdx, emoji }: ConversationProps) => {
-	const { selectedConversation, setSelectedConversation, unreadCounts, clearUnreadCount } = useConversation();
+	const { selectedConversation, setSelectedConversation, unreadCounts, clearUnreadCount, searchQuery } = useConversation();
 	const unreadCount = unreadCounts[conversation._id] || 0;
 
 	const isSelected = selectedConversation?._id === conversation._id;
 	const { onlineUsers } = useSocketContext();
 	const isOnline = onlineUsers.includes(conversation._id);
+
+	const highlightMatch = (text: string, query: string) => {
+		if (!query) return text;
+		const parts = text.split(new RegExp(`(${query})`, "gi"));
+		return (
+			<span>
+				{parts.map((part, i) =>
+					part.toLowerCase() === query.toLowerCase() ? (
+						<span key={i} className="text-volt font-black underline underline-offset-2">
+							{part}
+						</span>
+					) : (
+						part
+					),
+				)}
+			</span>
+		);
+	};
 
 	const handleClick = () => {
 		setSelectedConversation(conversation);
@@ -61,7 +79,7 @@ const Conversation = ({ conversation, lastIdx, emoji }: ConversationProps) => {
 				<div className='flex flex-col flex-1 min-w-0'>
 					<div className='flex justify-between items-center'>
 						<p className={`font-semibold text-[0.92rem] truncate tracking-tight transition-colors ${isSelected ? "text-volt" : "text-white/80 group-hover:text-white"}`}>
-							{conversation.fullName}
+							{highlightMatch(conversation.fullName, searchQuery)}
 						</p>
 						<span className='text-lg grayscale group-hover:grayscale-0 transition-all duration-300'>{emoji}</span>
 					</div>

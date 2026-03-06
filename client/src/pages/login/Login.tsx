@@ -18,6 +18,7 @@ const Login = () => {
 			<div className='w-full p-10 rounded-[2.5rem] glass-panel volt-glow-sm shadow-2xl relative overflow-hidden'>
 
 
+				<p className='text-[10px] font-bold text-white/20 tracking-[0.5em] uppercase text-center mb-1'>Hello</p>
 				<h1 className='text-6xl font-[900] text-center text-white mb-2 tracking-tighter uppercase brand-font'>
 					CHATR<span className='text-volt'>.</span>
 				</h1>
@@ -26,11 +27,11 @@ const Login = () => {
 				<form onSubmit={handleSubmit} className='space-y-7'>
 					<div className='space-y-2'>
 						<label className='px-1'>
-							<span className='text-[10px] font-bold text-white/20 tracking-[0.2em] uppercase'>User Identity</span>
+							<span className='text-[10px] font-bold text-white/20 tracking-[0.2em] uppercase'>Username</span>
 						</label>
 						<input
 							type='text'
-							placeholder='Enter Username'
+							placeholder=''
 							className='w-full input h-14 px-5 text-sm font-medium'
 							value={username}
 							onChange={(e) => setUsername(e.target.value)}
@@ -39,7 +40,7 @@ const Login = () => {
 
 					<div className='space-y-2'>
 						<label className='px-1'>
-							<span className='text-[10px] font-bold text-white/20 tracking-[0.2em] uppercase'>Access Key</span>
+							<span className='text-[10px] font-bold text-white/20 tracking-[0.2em] uppercase'>Password</span>
 						</label>
 						<input
 							type='password'
@@ -55,14 +56,14 @@ const Login = () => {
 							className='btn btn-primary h-14 w-full rounded-2xl text-[15px]'
 							disabled={loading}
 						>
-							{loading ? <span className='loading loading-spinner'></span> : "AUTHENTICATE"}
+							{loading ? <span className='loading loading-spinner'></span> : "WELCOME BACK"}
 						</button>
 
 						<Link
 							to='/signup'
 							className='text-[11px] text-white/30 hover:text-volt text-center block transition-all duration-300 font-bold tracking-[0.1em] uppercase'
 						>
-							New User? Create Account
+							New user? Join the conversation →
 						</Link>
 					</div>
 				</form>
