@@ -11,7 +11,7 @@ if (!rootElement) throw new Error("Root element not found");
 
 ReactDOM.createRoot(rootElement).render(
 	<React.StrictMode>
-		<BrowserRouter>
+		<BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
 			<AuthContextProvider>
 				<SocketContextProvider>
 					<App />
