@@ -20,8 +20,8 @@ const generateTokenAndSetCookie = (
   res.cookie("jwt", token, {
     maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
     httpOnly: true, // cannot be accessed by JS
-    sameSite: isDev ? "lax" : "strict",
-    secure: !isDev, // only HTTPS in prod
+    sameSite: "lax",
+    secure: false, // only HTTPS in prod
   });
 };
 
