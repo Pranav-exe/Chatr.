@@ -18,3 +18,8 @@ spec:
           image: redis:7-alpine
           ports:
             - containerPort: 6379
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
