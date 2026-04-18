@@ -22,14 +22,16 @@ gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
 
 # Step 2 — Create GKE cluster
 echo "☁️  Creating GKE cluster (this takes 3-5 minutes)..."
-gcloud container clusters create $CLUSTER_NAME \
-  --zone $ZONE \
+gcloud container clusters create chatr-cluster \
+  --zone asia-south1-a \
   --num-nodes 1 \
-  --machine-type e2-medium \
+  --machine-type e2-small \
   --disk-size 20 \
   --no-enable-autoupgrade \
   --no-enable-autorepair \
-  --project $PROJECT_ID
+  --logging=NONE \
+  --monitoring=NONE \
+  --no-enable-managed-prometheus
 
 # Step 3 — Get credentials and point kubectl at GKE
 echo "🔗 Configuring kubectl..."

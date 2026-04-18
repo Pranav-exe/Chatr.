@@ -20,16 +20,16 @@ spec:
       containers:
         - name: redis
           image: redis:7-alpine
-          imagePullPolicy: if-not-present
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 6379
           # ── Resource Limits ──
           resources:
             requests:
-              cpu: 100m
-              memory: 128Mi
+              cpu: 50m
+              memory: 64Mi
             limits:
-              cpu: 200m
+              cpu: 150m
               memory: 256Mi
           # ── Health Check ──
           livenessProbe:

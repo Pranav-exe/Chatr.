@@ -36,11 +36,11 @@ spec:
           # requests = minimum guaranteed | limits = maximum allowed
           resources:
             requests:
-              cpu: 150m        # 0.25 CPU cores
-              memory: 128Mi    # 256 MB RAM
+              cpu: 100m
+              memory: 100Mi
             limits:
-              cpu: 250m        # 0.5 CPU cores max
-              memory: 256Mi    # 512 MB RAM max
+              cpu: 400m
+              memory: 512Mi   # 512 MB RAM max
           # ── Health Checks (same as before, they work great) ──
           livenessProbe:
             httpGet:

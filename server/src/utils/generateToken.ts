@@ -15,13 +15,13 @@ const generateTokenAndSetCookie = (
     expiresIn: "1d",
   });
 
-  const isProd = process.env.NODE_ENV === "production";
+  const isHTTPS = process.env.USE_HTTPS === "true";
 
   res.cookie("jwt", token, {
     maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
-    httpOnly: true, // cannot be accessed by JS
-    sameSite: isProd ? "none" : "lax", // "none" needed for cross-origin in prod
-    secure: isProd, // true in production (HTTPS on GKE), false locally (HTTP)
+    httpOnly: true,
+    sameSite: isHTTPS ? "none" : "lax",
+    secure: isHTTPS,
   });
 };
 

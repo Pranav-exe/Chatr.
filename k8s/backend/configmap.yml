@@ -7,14 +7,11 @@ data:
   # ── Server Configuration ──
   PORT: "5001"
   NODE_ENV: production
-
   # ── Redis ──
   REDIS_HOST: redis
   REDIS_PORT: "6379"
-
   # ── CORS ──
-  # Replace with your actual domain after deploying Ingress.
-  # For initial testing with just the Ingress IP: http://<INGRESS_IP>
-  ALLOWED_ORIGINS: "*"
-
+  ALLOWED_ORIGINS: "http://34.100.186.101"
+  # ── HTTPS ──
+  USE_HTTPS: "false"
   # NOTE: MONGO_DB_URI is in the Secret (not here) because it contains credentials
