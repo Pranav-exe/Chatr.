@@ -47,6 +47,7 @@ kubectl -n chatr get pods
 echo ""
 kubectl -n chatr get svc
 echo ""
-echo "💡 Access your app:"
-echo "   kubectl -n chatr port-forward svc/nginx 8080:80"
-echo "   Then open: http://localhost:8080"
+echo "⏳ Waiting for external IP to be assigned..."
+echo "   (Ctrl+C once you see the IP)"
+echo ""
+kubectl -n chatr get svc nginx --watch
