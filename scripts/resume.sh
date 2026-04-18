@@ -5,6 +5,7 @@
 # Use after ./k8s/pause.sh to bring everything back up.
 # MongoDB must come up first, then Redis, then Backend, then Nginx.
 # ──────────────────────────────────────────────────────────────────
+set -e
 
 echo "▶️  Resuming Chatr..."
 
