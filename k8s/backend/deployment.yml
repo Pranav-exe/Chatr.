@@ -3,6 +3,9 @@ kind: Deployment
 metadata:
   name: backend
   namespace: chatr
+  labels:
+    app: backend
+    tier: api
 spec:
   replicas: 1
   selector:
@@ -12,11 +15,15 @@ spec:
     metadata:
       labels:
         app: backend
+        tier: api
     spec:
       containers:
         - name: backend
-          image: chatr-backend:latest
-          imagePullPolicy: Never
+          # ── GKE: Use Artifact Registry image (replace with your project ID) ──
+          # Local OrbStack was: chatr-backend:latest with imagePullPolicy: Never
+          # GKE pulls from your Artifact Registry — no imagePullPolicy needed
+          image: asia-south1-docker.pkg.dev/project-092b20ff-9e3c-4ee0-95f/chatr-repo/chatr-backend:v1
+          imagePullPolicy: Always
           ports:
             - containerPort: 5001
           envFrom:
@@ -24,6 +31,17 @@ spec:
                 name: backend-config
             - secretRef:
                 name: backend-secret
+          # ── Resource Requests & Limits ──
+          # GKE Autopilot REQUIRES these. Standard clusters use them for scheduling.
+          # requests = minimum guaranteed | limits = maximum allowed
+          resources:
+            requests:
+              cpu: 250m        # 0.25 CPU cores
+              memory: 256Mi    # 256 MB RAM
+            limits:
+              cpu: 500m        # 0.5 CPU cores max
+              memory: 512Mi    # 512 MB RAM max
+          # ── Health Checks (same as before, they work great) ──
           livenessProbe:
             httpGet:
               path: /api/health

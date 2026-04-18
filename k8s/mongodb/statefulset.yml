@@ -3,6 +3,9 @@ kind: StatefulSet
 metadata:
   name: mongodb
   namespace: chatr
+  labels:
+    app: mongodb
+    tier: database
 spec:
   serviceName: mongodb
   replicas: 1
@@ -13,28 +16,56 @@ spec:
     metadata:
       labels:
         app: mongodb
+        tier: database
     spec:
       containers:
         - name: mongodb
           image: mongo:7
           ports:
             - containerPort: 27017
+          # ── GKE: Enable MongoDB Authentication ──
+          # The official mongo image reads these env vars on first boot
+          # to create the root user. Without this, anyone can access your DB!
+          envFrom:
+            - secretRef:
+                name: mongodb-secret
           volumeMounts:
             - name: mongodb-storage
               mountPath: /data/db
+          # ── Resource Limits ──
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          # ── Health Checks ──
           livenessProbe:
             tcpSocket:
               port: 27017
             initialDelaySeconds: 15
             periodSeconds: 20
             successThreshold: 1
-            failureThreshold: 3    
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: 27017
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+  # ── Persistent Volume Claim Template ──
+  # On GKE, this automatically provisions a GCE Persistent Disk
+  # Data survives pod restarts, rescheduling, and even node failures
   volumeClaimTemplates:
     - metadata:
         name: mongodb-storage
       spec:
         accessModes:
           - ReadWriteOnce
+        # storageClassName is optional — GKE uses "standard-rwo" by default
+        # which provisions SSD-backed persistent disks
         resources:
           requests:
-            storage: 1Gi
+            storage: 5Gi

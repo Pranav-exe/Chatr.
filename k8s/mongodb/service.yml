@@ -4,9 +4,11 @@ metadata:
   name: mongodb
   namespace: chatr
 spec:
+  type: ClusterIP
+  clusterIP: None
   selector:
     app: mongodb
   ports:
-    - port: 27017
+    - name: mongodb
+      port: 27017
       targetPort: 27017
-  clusterIP: None

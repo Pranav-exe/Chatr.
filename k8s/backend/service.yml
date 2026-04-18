@@ -4,8 +4,10 @@ metadata:
   name: backend
   namespace: chatr
 spec:
+  type: ClusterIP
   selector:
     app: backend
   ports:
-    - port: 5001
+    - name: http
+      port: 5001
       targetPort: 5001

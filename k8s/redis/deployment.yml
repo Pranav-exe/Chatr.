@@ -3,6 +3,9 @@ kind: Deployment
 metadata:
   name: redis
   namespace: chatr
+  labels:
+    app: redis
+    tier: cache
 spec:
   replicas: 1
   selector:
@@ -12,14 +15,34 @@ spec:
     metadata:
       labels:
         app: redis
+        tier: cache
     spec:
       containers:
         - name: redis
           image: redis:7-alpine
+          imagePullPolicy: if-not-present
           ports:
             - containerPort: 6379
+          # ── Resource Limits ──
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          # ── Health Check ──
           livenessProbe:
             exec:
               command:
                 - redis-cli
                 - ping
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 5
+            periodSeconds: 5

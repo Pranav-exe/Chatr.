@@ -3,6 +3,9 @@ kind: Deployment
 metadata:
   name: nginx
   namespace: chatr
+  labels:
+    app: nginx
+    tier: frontend
 spec:
   replicas: 1
   selector:
@@ -12,10 +15,34 @@ spec:
     metadata:
       labels:
         app: nginx
+        tier: frontend
     spec:
       containers:
         - name: nginx
-          image: chatr-nginx:latest
-          imagePullPolicy: Never
+          # ── GKE: Use Artifact Registry image ──
+          image: asia-south1-docker.pkg.dev/project-092b20ff-9e3c-4ee0-95f/chatr-repo/chatr-nginx:v1
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
+          # ── Resource Limits ──
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          # ── Health Check ──
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10

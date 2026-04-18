@@ -38,3 +38,4 @@ dist-ssr
 *.sln
 *.sw?
 k8s/backend/secret.yml
+k8s/mongodb/secret.yml
