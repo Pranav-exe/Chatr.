@@ -4,16 +4,17 @@
 # ──────────────────────────────────────────────────────────────────
 # Use when you're DONE for the day. Deletes the entire cluster.
 # All data (MongoDB) will be LOST.
-# To recreate: ./k8s/setup-cluster.sh then ./k8s/deploy.sh
+# To recreate: ./scripts/setup.sh then ./scripts/deploy.sh
 # ──────────────────────────────────────────────────────────────────
+set -e
 
 CLUSTER_NAME="chatr-cluster"
-REGION="asia-south1"
+ZONE="asia-south1-a"
 PROJECT_ID=$(gcloud config get-value project)
 
 echo "🗑️  Tearing down Chatr cluster..."
 echo "   Cluster: $CLUSTER_NAME"
-echo "   Region:  $REGION"
+echo "   Zone:    $ZONE"
 echo "   Project: $PROJECT_ID"
 echo ""
 echo "⚠️  WARNING: This will delete the cluster and ALL data!"
@@ -27,12 +28,12 @@ fi
 echo ""
 echo "Deleting cluster (this takes 2-5 minutes)..."
 gcloud container clusters delete $CLUSTER_NAME \
-  --region=$REGION \
+  --zone=$ZONE \
   --project=$PROJECT_ID \
   --quiet
 
 echo ""
-echo "✅ Cluster deleted. $0 cost from now."
+echo "✅ Cluster deleted. Zero cost from now."
 echo ""
-echo "To recreate: ./k8s/setup-cluster.sh"
-echo "Then deploy: ./k8s/deploy.sh"
+echo "To recreate: ./scripts/setup.sh"
+echo "Then deploy: ./scripts/deploy.sh"

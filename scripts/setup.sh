@@ -25,7 +25,7 @@ echo "☁️  Creating GKE cluster (this takes 3-5 minutes)..."
 gcloud container clusters create $CLUSTER_NAME \
   --zone $ZONE \
   --num-nodes 1 \
-  --machine-type e2-small \
+  --machine-type e2-medium \
   --disk-size 20 \
   --no-enable-autoupgrade \
   --no-enable-autorepair \
@@ -46,4 +46,4 @@ echo "────────────────────────�
 echo "✅ Cluster ready!"
 echo ""
 echo "Next step — create your secrets then run:"
-echo "   ./k8s/deploy.sh"
+echo "   ./scripts/deploy.sh"

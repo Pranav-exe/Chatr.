@@ -8,7 +8,7 @@ echo "🚀 Deploying Chatr to GKE..."
 echo "────────────────────────────"
 
 echo "📦 Creating namespace..."
-kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/namespace.yml
 
 echo "🔐 Creating secrets..."
 kubectl apply -f k8s/mongodb/secret.yml
