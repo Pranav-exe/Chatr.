@@ -1,0 +1,48 @@
+{{/*
+  NGINX DEPLOYMENT (Frontend + Reverse Proxy)
+  
+  This is YOUR custom nginx image that contains:
+  - The React production build (static files)
+  - The nginx.conf that proxies /api → backend:5001
+  
+  Uses the global.imageRegistry because it's YOUR image (not a public one like redis/mongo).
+*/}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  labels:
+    {{- include "chatr.componentLabels" (dict "component" "nginx" "context" .) | nindent 4 }}
+    tier: frontend
+spec:
+  replicas: {{ .Values.nginx.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "chatr.selectorLabels" "nginx" | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "chatr.selectorLabels" "nginx" | nindent 8 }}
+        tier: frontend
+    spec:
+      containers:
+        - name: nginx
+          image: {{ include "chatr.image" (dict "registry" .Values.global.imageRegistry "repo" .Values.nginx.image.repository "tag" (default .Chart.AppVersion .Values.nginx.image.tag)) }}
+          imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.nginx.port }}
+          resources:
+            {{- toYaml .Values.nginx.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.nginx.livenessProbe.path }}
+              port: {{ .Values.nginx.livenessProbe.port }}
+            initialDelaySeconds: {{ .Values.nginx.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.nginx.livenessProbe.periodSeconds }}
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.nginx.readinessProbe.path }}
+              port: {{ .Values.nginx.readinessProbe.port }}
+            initialDelaySeconds: {{ .Values.nginx.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.nginx.readinessProbe.periodSeconds }}

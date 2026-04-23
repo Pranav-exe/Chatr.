@@ -1,0 +1,64 @@
+{{/*
+  ──────────────────────────────────────────────────────────────────
+  BACKEND DEPLOYMENT
+  ──────────────────────────────────────────────────────────────────
+  This is the templatized version of your original backend-deployment.yml.
+  
+  WHAT CHANGED from your static file:
+  - replicas: 1                  → replicas: {{ .Values.backend.replicaCount }}
+  - image: asia-south1.../v1     → image: {{ include "chatr.image" ... }}
+  - imagePullPolicy: Always      → imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+  - containerPort: 5001          → containerPort: {{ .Values.backend.port }}
+  - resources: (hardcoded)       → resources: {{ toYaml .Values.backend.resources }}
+  - namespace: chatr             → REMOVED (Helm sets it via -n flag)
+  - labels: app: backend         → labels: include "chatr.componentLabels"
+  
+  HOW HELM PROCESSES THIS:
+  1. You run: helm install chatr ./chatr-chart -n chatr
+  2. Helm reads values.yaml → finds backend.replicaCount = 1
+  3. Helm replaces {{ .Values.backend.replicaCount }} with 1
+  4. Helm applies the rendered YAML to your cluster
+*/}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    {{- include "chatr.componentLabels" (dict "component" "backend" "context" .) | nindent 4 }}
+    tier: api
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "chatr.selectorLabels" "backend" | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "chatr.selectorLabels" "backend" | nindent 8 }}
+        tier: api
+    spec:
+      containers:
+        - name: backend
+          image: {{ include "chatr.image" (dict "registry" .Values.global.imageRegistry "repo" .Values.backend.image.repository "tag" (default .Chart.AppVersion .Values.backend.image.tag)) }}
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.backend.port }}
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: backend-secret
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.backend.livenessProbe.path }}
+              port: {{ .Values.backend.livenessProbe.port }}
+            initialDelaySeconds: {{ .Values.backend.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.livenessProbe.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.backend.readinessProbe.path }}
+              port: {{ .Values.backend.readinessProbe.port }}
+            initialDelaySeconds: {{ .Values.backend.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.readinessProbe.periodSeconds }}

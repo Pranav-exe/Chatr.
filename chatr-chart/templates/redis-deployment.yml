@@ -1,0 +1,54 @@
+{{/*
+  REDIS DEPLOYMENT
+  
+  NEW FEATURE: {{- if .Values.redis.enabled }}
+  This entire file is wrapped in a conditional.
+  If you set redis.enabled: false in values.yaml (e.g., because you're using
+  Google Memorystore in production), this Deployment won't be created at all.
+  
+  WHAT CHANGED:
+  - image: redis:7-alpine  → image: {{ repo }}:{{ tag }}
+  - All resources/probes   → read from .Values.redis.*
+*/}}
+{{- if .Values.redis.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  labels:
+    {{- include "chatr.componentLabels" (dict "component" "redis" "context" .) | nindent 4 }}
+    tier: cache
+spec:
+  replicas: {{ .Values.redis.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "chatr.selectorLabels" "redis" | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "chatr.selectorLabels" "redis" | nindent 8 }}
+        tier: cache
+    spec:
+      containers:
+        - name: redis
+          image: {{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}
+          imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.redis.port }}
+          resources:
+            {{- toYaml .Values.redis.resources | nindent 12 }}
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: {{ .Values.redis.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.redis.livenessProbe.periodSeconds }}
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: {{ .Values.redis.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.redis.readinessProbe.periodSeconds }}
+{{- end }}

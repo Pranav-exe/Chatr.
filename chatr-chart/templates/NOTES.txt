@@ -1,0 +1,52 @@
+╔══════════════════════════════════════════════════════════════════╗
+║              🎉 Chatr has been deployed!                       ║
+╚══════════════════════════════════════════════════════════════════╝
+
+Release Name:  {{ .Release.Name }}
+Namespace:     {{ .Release.Namespace }}
+App Version:   {{ .Chart.AppVersion }}
+Chart Version: {{ .Chart.Version }}
+
+── Services Deployed ──────────────────────────────────────────────
+  ✅ Backend   (Node.js API)
+  ✅ Nginx     (Frontend + Reverse Proxy)
+{{- if .Values.mongodb.enabled }}
+  ✅ MongoDB   (StatefulSet with {{ .Values.mongodb.persistence.size }} storage)
+{{- else }}
+  ⏭️  MongoDB   (Skipped — using external database)
+{{- end }}
+{{- if .Values.redis.enabled }}
+  ✅ Redis     (In-memory cache)
+{{- else }}
+  ⏭️  Redis     (Skipped — using external cache)
+{{- end }}
+
+── Access Your App ────────────────────────────────────────────────
+{{- if eq .Values.nginx.service.type "LoadBalancer" }}
+  Waiting for external IP...
+  Run this to find your IP:
+    kubectl get svc nginx -n {{ .Release.Namespace }} --watch
+
+  Then open:  http://<EXTERNAL-IP>
+{{- else }}
+  Service type is {{ .Values.nginx.service.type }}.
+  Use port-forward to access locally:
+    kubectl port-forward svc/nginx {{ .Values.nginx.service.port }}:{{ .Values.nginx.service.port }} -n {{ .Release.Namespace }}
+  Then open:  http://localhost:{{ .Values.nginx.service.port }}
+{{- end }}
+
+── Useful Commands ────────────────────────────────────────────────
+  # Check pod status
+  kubectl get pods -n {{ .Release.Namespace }}
+
+  # View backend logs
+  kubectl logs -l app=backend -n {{ .Release.Namespace }} -f
+
+  # Upgrade after changes
+  helm upgrade {{ .Release.Name }} ./chatr-chart -n {{ .Release.Namespace }}
+
+  # Rollback to previous version
+  helm rollback {{ .Release.Name }} -n {{ .Release.Namespace }}
+
+  # Uninstall everything
+  helm uninstall {{ .Release.Name }} -n {{ .Release.Namespace }}

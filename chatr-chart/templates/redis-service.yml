@@ -1,0 +1,20 @@
+{{/*
+  REDIS SERVICE
+  Only deployed if redis.enabled is true.
+*/}}
+{{- if .Values.redis.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  labels:
+    {{- include "chatr.componentLabels" (dict "component" "redis" "context" .) | nindent 4 }}
+spec:
+  type: {{ .Values.redis.service.type }}
+  selector:
+    {{- include "chatr.selectorLabels" "redis" | nindent 4 }}
+  ports:
+    - name: redis
+      port: {{ .Values.redis.service.port }}
+      targetPort: {{ .Values.redis.port }}
+{{- end }}

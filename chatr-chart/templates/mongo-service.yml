@@ -1,0 +1,26 @@
+{{/*
+  MONGODB SERVICE (Headless)
+  
+  WHY clusterIP: None?
+  This creates a "headless" service. Normal services give you ONE virtual IP
+  that load-balances across pods. Headless services give you DNS entries
+  for EACH pod directly (mongodb-0.mongodb, mongodb-1.mongodb).
+  StatefulSets require headless services so each pod has a stable DNS name.
+*/}}
+{{- if .Values.mongodb.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  labels:
+    {{- include "chatr.componentLabels" (dict "component" "mongodb" "context" .) | nindent 4 }}
+spec:
+  type: {{ .Values.mongodb.service.type }}
+  clusterIP: {{ .Values.mongodb.service.clusterIP }}
+  selector:
+    {{- include "chatr.selectorLabels" "mongodb" | nindent 4 }}
+  ports:
+    - name: mongodb
+      port: {{ .Values.mongodb.service.port }}
+      targetPort: {{ .Values.mongodb.port }}
+{{- end }}

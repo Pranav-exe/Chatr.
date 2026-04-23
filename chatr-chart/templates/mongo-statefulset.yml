@@ -1,0 +1,75 @@
+{{/*
+  MONGODB STATEFULSET
+  
+  WHY StatefulSet and not Deployment?
+  - Deployments are for stateless apps (backend, nginx — they don't store data)
+  - StatefulSets are for stateful apps (databases — they need persistent storage)
+  - StatefulSet gives each pod a stable name (mongodb-0, mongodb-1) and its own PVC
+  
+  WHAT CHANGED:
+  - image: mongo:7        → image: {{ repo }}:{{ tag }}
+  - All resources/probes  → read from .Values.mongodb.*
+  - storage: 5Gi          → storage: {{ .Values.mongodb.persistence.size }}
+  
+  NEW FEATURE:
+  - {{- if .Values.mongodb.enabled }}  →  entire file is conditional!
+    If you set mongodb.enabled: false, this whole resource is SKIPPED.
+*/}}
+{{- if .Values.mongodb.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  labels:
+    {{- include "chatr.componentLabels" (dict "component" "mongodb" "context" .) | nindent 4 }}
+    tier: database
+spec:
+  serviceName: mongodb
+  replicas: {{ .Values.mongodb.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "chatr.selectorLabels" "mongodb" | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "chatr.selectorLabels" "mongodb" | nindent 8 }}
+        tier: database
+    spec:
+      containers:
+        - name: mongodb
+          image: {{ .Values.mongodb.image.repository }}:{{ .Values.mongodb.image.tag }}
+          imagePullPolicy: {{ .Values.mongodb.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.mongodb.port }}
+          envFrom:
+            - secretRef:
+                name: mongodb-secret
+          volumeMounts:
+            - name: mongodb-storage
+              mountPath: /data/db
+          resources:
+            {{- toYaml .Values.mongodb.resources | nindent 12 }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.mongodb.livenessProbe.port }}
+            initialDelaySeconds: {{ .Values.mongodb.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.mongodb.livenessProbe.periodSeconds }}
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.mongodb.readinessProbe.port }}
+            initialDelaySeconds: {{ .Values.mongodb.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.mongodb.readinessProbe.periodSeconds }}
+            successThreshold: 1
+            failureThreshold: 3
+  volumeClaimTemplates:
+    - metadata:
+        name: mongodb-storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: {{ .Values.mongodb.persistence.size }}
+{{- end }}

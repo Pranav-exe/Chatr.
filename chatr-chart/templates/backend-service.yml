@@ -1,0 +1,23 @@
+{{/*
+  BACKEND SERVICE
+  Exposes the backend pods internally so nginx can reach them.
+  
+  WHAT CHANGED:
+  - namespace: chatr  → REMOVED (Helm handles it)
+  - type: ClusterIP   → type: {{ .Values.backend.service.type }}
+  - port: 5001        → port: {{ .Values.backend.service.port }}
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  labels:
+    {{- include "chatr.componentLabels" (dict "component" "backend" "context" .) | nindent 4 }}
+spec:
+  type: {{ .Values.backend.service.type }}
+  selector:
+    {{- include "chatr.selectorLabels" "backend" | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.backend.service.port }}
+      targetPort: {{ .Values.backend.port }}

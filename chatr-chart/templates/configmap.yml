@@ -1,0 +1,30 @@
+{{/*
+  BACKEND CONFIG (ConfigMap)
+  Non-sensitive environment variables for the backend.
+  
+  WHAT CHANGED:
+  - Every value hardcoded → reads from .Values.config.*
+  - PORT now reads from .Values.backend.port
+  
+  WHY ConfigMap and not Secret?
+  - ConfigMaps are for NON-SENSITIVE config (ports, hostnames, feature flags)
+  - Secrets are for SENSITIVE data (passwords, API keys, tokens)
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  labels:
+    {{- include "chatr.componentLabels" (dict "component" "backend" "context" .) | nindent 4 }}
+data:
+  # ── Server Configuration ──
+  PORT: {{ .Values.backend.port | quote }}
+  NODE_ENV: {{ .Values.config.nodeEnv | quote }}
+  # ── Redis ──
+  REDIS_HOST: {{ .Values.config.redisHost | quote }}
+  REDIS_PORT: {{ .Values.config.redisPort | quote }}
+  # ── CORS ──
+  ALLOWED_ORIGINS: {{ .Values.config.allowedOrigins | quote }}
+  # ── HTTPS ──
+  USE_HTTPS: {{ .Values.config.useHttps | quote }}
+  # NOTE: MONGO_DB_URI is in the Secret (not here) because it contains credentials

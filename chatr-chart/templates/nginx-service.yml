@@ -1,0 +1,22 @@
+{{/*
+  NGINX SERVICE
+  
+  type: LoadBalancer → GKE provisions a public IP and Cloud Load Balancer.
+  This is the ONLY service exposed externally. Everything else is ClusterIP (internal).
+  
+  Traffic flow: Internet → LoadBalancer:80 → nginx pod → /api/* → backend:5001
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  labels:
+    {{- include "chatr.componentLabels" (dict "component" "nginx" "context" .) | nindent 4 }}
+spec:
+  type: {{ .Values.nginx.service.type }}
+  selector:
+    {{- include "chatr.selectorLabels" "nginx" | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.nginx.service.port }}
+      targetPort: {{ .Values.nginx.port }}

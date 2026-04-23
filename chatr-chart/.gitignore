@@ -1,0 +1,17 @@
+# Helm
+charts/
+*.tgz
+Chart.lock
+
+# Secrets (local only)
+secrets.yaml
+.env
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store

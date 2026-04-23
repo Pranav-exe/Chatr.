@@ -1,0 +1,21 @@
+{{/*
+  NAMESPACE
+  
+  ⚠️  BEST PRACTICE: Most Helm charts do NOT create the namespace themselves.
+  Instead, you pass --create-namespace when installing:
+    helm install chatr ./chatr-chart -n chatr --create-namespace
+  
+  But if you WANT the chart to manage the namespace (so helm uninstall deletes it),
+  keep this file. We'll keep it here as optional — controlled by a flag.
+  
+  If you DON'T want this, just delete this file and use:
+    helm install chatr ./chatr-chart -n chatr --create-namespace
+*/}}
+{{- if .Values.global.createNamespace | default false }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Release.Namespace }}
+  labels:
+    {{- include "chatr.labels" . | nindent 4 }}
+{{- end }}
