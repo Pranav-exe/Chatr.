@@ -20,19 +20,19 @@ jobs:
 
       - name: Lint Helm chart
         run: |
-          helm lint ./chatr-chart/charts
+          helm lint ./Helm
 
       - name: Template Helm chart
         run: |
-          helm template test-release ./chatr-chart/charts > /dev/null
+          helm template test-release ./Helm > /dev/null
           echo "✅ Chart templates rendered successfully"
 
       - name: Template with dev values
         run: |
-          helm template test-release ./chatr-chart/charts -f ./chatr-chart/values-dev.yaml > /dev/null
+          helm template test-release ./Helm -f ./Helm/values-dev.yaml > /dev/null
           echo "✅ Dev values validated"
 
       - name: Template with prod values
         run: |
-          helm template test-release ./chatr-chart/charts -f ./chatr-chart/values-prod.yaml > /dev/null
+          helm template test-release ./Helm -f ./Helm/values-prod.yaml > /dev/null
           echo "✅ Prod values validated"

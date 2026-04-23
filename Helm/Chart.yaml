@@ -1,0 +1,32 @@
+apiVersion: v2
+# apiVersion: v2 means Helm 3. Always use v2. (v1 was Helm 2, which is deprecated)
+
+name: chatr-chart
+# The chart name. Used in labels and release names.
+# Convention: lowercase, hyphens allowed, no spaces.
+
+description: >-
+  Helm chart for Chatr — a full-stack real-time chat application.
+  Deploys: Node.js backend, MongoDB (StatefulSet + PVC), Redis cache, and Nginx frontend.
+
+# "application" = a real deployable app (what we want).
+# "library"     = only helpers/functions, cannot be deployed directly.
+type: application
+
+# ── CHART version ──────────────────────────────────────────────────────────────
+# Bump THIS when you change templates, values.yaml, or helpers.
+# Follows SemVer: MAJOR.MINOR.PATCH
+#   PATCH (0.1.0 → 0.1.1) = bug fix in templates
+#   MINOR (0.1.0 → 0.2.0) = new feature added to chart
+#   MAJOR (0.1.0 → 1.0.0) = breaking change
+version: 0.1.0
+
+# ── APP version ────────────────────────────────────────────────────────────────
+# Bump THIS when you push new Docker images of your app.
+# This is what you tag your Docker images with (chatr-backend:v1, chatr-nginx:v1)
+# In templates we reference this with: {{ .Chart.AppVersion }}
+appVersion: "v1"
+
+# Who made this chart. Useful if you ever publish it to a registry.
+maintainers:
+  - name: Pranav Sharma

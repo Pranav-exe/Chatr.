@@ -1,0 +1,75 @@
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║  values-dev.yaml — Development Environment Overrides           ║
+# ║                                                                ║
+# ║  USAGE:                                                        ║
+# ║    helm install chatr ./chatr-chart -f values-dev.yaml -n chatr-dev --create-namespace
+# ║                                                                ║
+# ║  This file only contains values that DIFFER from values.yaml.  ║
+# ║  Everything else falls back to the defaults in values.yaml.    ║
+# ╚══════════════════════════════════════════════════════════════════╝
+
+# In dev, use local/smaller images
+global:
+  imageRegistry: "" # Empty = no registry prefix. For local clusters (OrbStack/Minikube) use local images.
+
+backend:
+  replicaCount: 1
+  image:
+    repository: chatr-backend
+    tag: "latest"
+    pullPolicy: Never # Never = use locally built image (don't try to pull from registry)
+  # Smaller resource limits for dev
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+config:
+  nodeEnv: development
+  allowedOrigins: "http://localhost:8080"
+
+# Dev secrets (safe to commit since it's local dev)
+secrets:
+  jwtSecret: "dev-jwt-secret-not-for-production"
+  mongoDbUri: "mongodb://chatr_admin:devmongo59@mongodb.chatr-dev.svc.cluster.local:27017/chatapp?authSource=admin"
+
+mongodb:
+  auth:
+    rootPassword: "devmongo59"
+  persistence:
+    size: 1Gi # Smaller storage in dev
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+
+redis:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+nginx:
+  replicaCount: 1
+  image:
+    repository: chatr-nginx
+    tag: "latest"
+    pullPolicy: Never
+  service:
+    type: NodePort # NodePort for local access (no cloud Load Balancer in dev)
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
