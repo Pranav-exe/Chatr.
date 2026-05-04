@@ -16,7 +16,7 @@ import messageRoutes from "./routes/message.routes";
 import userRoutes from "./routes/user.routes";
 import connectToMongoDB from "./db/connectToMongoDB";
 import { connectRedis } from "./utils/redis";
-import { app, server } from "./sockets/socket";
+import { app, server, setupRedisAdapter } from "./sockets/socket";
 
 /**
  * Middleware
@@ -75,14 +75,24 @@ app.get("/api/health", (req: Request, res: Response) => {
  */
 const startServer = async () => {
   try {
-    await Promise.all([connectToMongoDB(), connectRedis()]);
+    if (NODE_ENV === "production") {
+      // 🚀 Production (GKE): Strict startup to ensure K8s health checks pass
+      await Promise.all([connectToMongoDB(), connectRedis()]);
+    } else {
+      // 🛠️ Development: Resilient startup to avoid blocking design work
+      await connectToMongoDB();
+      await connectRedis();
+    }
+    
+    // ⚡ Setup Socket Adapter AFTER Redis is ready
+    await setupRedisAdapter();
     server.listen(Number(PORT), "0.0.0.0", () => {
       console.log(`\x1b[32m[Server]\x1b[0m Running on http://0.0.0.0:${PORT}`);
       console.log(`\x1b[34m[Env]\x1b[0m Mode: ${NODE_ENV}`);
     });
   } catch (error) {
     console.error("\x1b[31m[Critical]\x1b[0m Failed to start server:", error);
-    process.exit(1);
+    if (NODE_ENV === "production") process.exit(1);
   }
 };
 

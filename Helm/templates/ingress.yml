@@ -1,0 +1,119 @@
+{{/*
+  ──────────────────────────────────────────────────────────────────
+  INGRESS RESOURCE
+  ──────────────────────────────────────────────────────────────────
+  
+  WHAT IS THIS?
+  An Ingress is a K8s resource that defines HTTP routing rules.
+  It tells the Ingress Controller: "when traffic arrives for this
+  hostname/path, send it to this Service."
+  
+  Think of it like an nginx.conf but as a Kubernetes object:
+    - server_name  →  host
+    - location /   →  path
+    - proxy_pass   →  backend service
+
+  WHY DO WE NEED IT?
+  Without Ingress: Each service needs its own LoadBalancer ($18+/month EACH).
+  With Ingress:    ONE LoadBalancer → Ingress Controller → routes to any service.
+
+  PREREQUISITES:
+  You must install an Ingress Controller first (it's a separate Helm chart):
+    helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+    helm install ingress-nginx ingress-nginx/ingress-nginx \
+      --namespace ingress-nginx --create-namespace
+
+  HOW IT WORKS:
+  1. Ingress Controller pod watches for Ingress resources
+  2. When it sees this Ingress, it updates its internal nginx config
+  3. Traffic: Client → Ingress Controller LB → matches host/path → forwards to Service
+
+  WEBSOCKET SUPPORT (critical for Chatr!):
+  Socket.IO uses WebSocket protocol. By default, proxies kill WebSocket
+  connections after 60 seconds. The timeout annotations below keep them alive.
+  Without these, your chat would disconnect every minute!
+
+  CONDITIONAL RENDERING:
+  This entire file is wrapped in {{- if .Values.ingress.enabled }}
+  So if ingress.enabled = false (default), this file produces NO output.
+  Helm won't create the Ingress resource at all.
+*/}}
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "chatr.fullname" . }}-ingress
+  labels:
+    {{- include "chatr.componentLabels" (dict "component" "ingress" "context" .) | nindent 4 }}
+  annotations:
+    # ── WEBSOCKET SUPPORT ──────────────────────────────────────────
+    # Chatr uses Socket.IO (WebSocket). Default proxy timeout is 60s.
+    # These keep WebSocket connections alive for 1 hour (3600 seconds).
+    # Without these: chat disconnects every 60 seconds!
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+
+    # Required for WebSocket protocol upgrade (HTTP → WS)
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+
+    # ── REQUEST SIZE ───────────────────────────────────────────────
+    # Max file upload size. Default is 1MB which is too small for images.
+    nginx.ingress.kubernetes.io/proxy-body-size: "5m"
+
+    # ── CONNECTION SETTINGS ────────────────────────────────────────
+    # Keep connections alive between Ingress Controller and your pods
+    nginx.ingress.kubernetes.io/upstream-keepalive-connections: "32"
+
+    {{- /* Merge any extra annotations from values.yaml */}}
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  # ── INGRESS CLASS ────────────────────────────────────────────────
+  # Tells K8s which Ingress Controller should handle this Ingress.
+  # "nginx" = the nginx-ingress-controller we installed.
+  # GKE also has "gce" class for its native HTTP(S) LB, but nginx
+  # is more portable (works on any cluster: local, AWS, GCP, Azure).
+  ingressClassName: {{ .Values.ingress.className }}
+
+  # ── TLS (HTTPS) ──────────────────────────────────────────────────
+  # Empty for now. Module 2 will add cert-manager + Let's Encrypt here.
+  # When configured, the Ingress Controller terminates TLS and forwards
+  # plain HTTP to your pods internally.
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- range .Values.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+
+  # ── ROUTING RULES ───────────────────────────────────────────────
+  # Define which hostname + path → which Service.
+  #
+  # For Chatr, all traffic goes to nginx because:
+  #   - nginx serves the React frontend (static files)
+  #   - nginx internally proxies /api/* → backend:5001
+  #   - nginx internally proxies /socket.io/* → backend:5001
+  #
+  # So the Ingress just needs ONE rule: everything → nginx Service
+  rules:
+    - {{- if .Values.ingress.host }}
+      host: {{ .Values.ingress.host | quote }}
+      {{- end }}
+      http:
+        paths:
+          - path: /
+            # Prefix = matches /anything. Exact = only matches exactly /.
+            # We want Prefix because we need /, /login, /chat, /api, etc.
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx
+                port:
+                  number: {{ .Values.nginx.service.port }}
+{{- end }}

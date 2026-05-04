@@ -7,6 +7,7 @@ export interface ConversationType {
   profilePic: string;
   gender: "male" | "female";
   lastSeen: string;
+  unreadCount?: number;
 }
 
 export interface MessageType {
@@ -37,6 +38,7 @@ interface ConversationState {
   clearMessages: () => void;
 
   unreadCounts: { [key: string]: number };
+  setUnreadCounts: (counts: { [key: string]: number }) => void;
   incrementUnreadCount: (senderId: string) => void;
   clearUnreadCount: (senderId: string) => void;
 
@@ -87,9 +89,13 @@ const useConversation = create<ConversationState>((set) => ({
       };
     }),
 
+  nochatMessages: () => set({ messages: [] }),
+
   clearMessages: () => set({ messages: [] }),
 
   unreadCounts: {},
+
+  setUnreadCounts: (unreadCounts) => set({ unreadCounts }),
 
   incrementUnreadCount: (senderId) =>
     set((state) => ({

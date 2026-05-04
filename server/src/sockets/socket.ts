@@ -29,15 +29,9 @@ const io = new Server(server, {
  * Any event emitted on Server A will be sent to Redis, which then
  * broadcasts it to all other connected Chatr servers.
  */
-const setupRedisAdapter = async () => {
+export const setupRedisAdapter = async () => {
   try {
-    if (!redisClient.isOpen) {
-      await redisClient.connect();
-    }
-
     // The adapter needs two separate connections to Redis:
-    // 1. One for Publishing (sending)
-    // 2. One for Subscribing (receiving)
     const pubClient = redisClient.duplicate();
     const subClient = redisClient.duplicate();
 
@@ -55,7 +49,6 @@ const setupRedisAdapter = async () => {
   }
 };
 
-setupRedisAdapter();
 
 interface UserSocketMap {
   [userId: string]: string;
@@ -75,7 +68,7 @@ const broadcastOnlineUsers = async () => {
   }
 };
 
-io.on("connection", (socket: Socket) => {
+io.on("connection", async (socket: Socket) => {
   const userId = socket.handshake.query.userId as string;
 
   if (userId && userId !== "undefined") {
@@ -85,9 +78,8 @@ io.on("connection", (socket: Socket) => {
     );
 
     // Add user to Redis Set for global tracking
-    redisClient.sAdd("online_users", userId).then(() => {
-      broadcastOnlineUsers();
-    });
+    await redisClient.sAdd("online_users", userId);
+    await broadcastOnlineUsers();
   }
 
   socket.on("typing", ({ receiverId }: { receiverId: string }) => {
@@ -105,15 +97,19 @@ io.on("connection", (socket: Socket) => {
   });
 
   socket.on("disconnect", async () => {
-    if (userId && userSocketMap[userId]) {
+    if (userId && userId !== "undefined") {
       console.log(`\x1b[31m[Socket]\x1b[0m User disconnected: ${userId}`);
-      delete userSocketMap[userId];
+      
+      // 🚀 Zero-Latency Cleanup: Remove from userSocketMap instantly
+      if (userSocketMap[userId] === socket.id) {
+        delete userSocketMap[userId];
+      }
 
       try {
         const lastSeen = new Date();
         await User.findByIdAndUpdate(userId, { lastSeen });
 
-        // Remove user from Redis Set
+        // ⚡ Immediate Redis Sync
         await redisClient.sRem("online_users", userId);
 
         // Notify others of status change
@@ -123,7 +119,7 @@ io.on("connection", (socket: Socket) => {
           lastSeen: lastSeen.toISOString(),
         });
 
-        broadcastOnlineUsers();
+        await broadcastOnlineUsers();
       } catch (error) {
         console.error("Error during disconnect cleanup:", error);
       }

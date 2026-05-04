@@ -29,6 +29,15 @@ const useGetConversations = () => {
           throw new Error(data.error || "Failed to fetch conversations");
         }
 
+        // ⚡ Synchronize initial unread counts from server
+        const initialUnreadCounts: { [key: string]: number } = {};
+        data.forEach((user: any) => {
+          if (user.unreadCount > 0) {
+            initialUnreadCounts[user._id] = user.unreadCount;
+          }
+        });
+
+        useConversation.getState().setUnreadCounts(initialUnreadCounts);
         setConversations(data);
       } catch (error: any) {
         if (error.name !== "AbortError") {

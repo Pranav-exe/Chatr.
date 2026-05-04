@@ -39,3 +39,7 @@ dist-ssr
 *.sw?
 k8s/backend/secret.yml
 k8s/mongodb/secret.yml
+
+# Helm configuration containing secrets
+Helm/values-prod.yaml
+Helm/values-dev.yaml

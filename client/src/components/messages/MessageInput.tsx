@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useState, useRef } from "react";
 import { BsSend } from "react-icons/bs";
 import useSendMessage from "../../hooks/useSendMessage";
 import { useSocketContext } from "../../context/SocketContext";
@@ -9,16 +9,20 @@ const MessageInput = () => {
 	const { loading, sendMessage } = useSendMessage();
 	const { socket } = useSocketContext();
 	const { selectedConversation } = useConversation();
-	const [typing, setTyping] = useState(false);
+	const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 		if (!message) return;
+
 		await sendMessage(message);
 		setMessage("");
+
 		if (socket && selectedConversation) {
 			socket.emit("stopTyping", { receiverId: selectedConversation._id });
-			setTyping(false);
+		}
+		if (typingTimeoutRef.current) {
+			clearTimeout(typingTimeoutRef.current);
 		}
 	};
 
@@ -27,42 +31,38 @@ const MessageInput = () => {
 
 		if (!socket || !selectedConversation) return;
 
-		if (!typing) {
-			setTyping(true);
-			socket.emit("typing", { receiverId: selectedConversation._id });
+		// ⚡ Emit typing event immediately
+		socket.emit("typing", { receiverId: selectedConversation._id });
+
+		// 🧹 Clear previous timeout
+		if (typingTimeoutRef.current) {
+			clearTimeout(typingTimeoutRef.current);
 		}
 
-		// stop typing timeout
-		const lastTypingTime = new Date().getTime();
-		const timerLength = 3000;
-		setTimeout(() => {
-			const timeNow = new Date().getTime();
-			const timeDiff = timeNow - lastTypingTime;
-			if (timeDiff >= timerLength && typing) {
-				socket.emit("stopTyping", { receiverId: selectedConversation._id });
-				setTyping(false);
-			}
-		}, timerLength);
+		// ⏱️ Set new idle timeout
+		typingTimeoutRef.current = setTimeout(() => {
+			socket.emit("stopTyping", { receiverId: selectedConversation._id });
+		}, 3000);
 	};
 
 	return (
-		<form className='px-6 py-4 mt-auto' onSubmit={handleSubmit}>
-			<div className='w-full relative flex items-center gap-3'>
+		<form className='px-4 md:px-8 py-4 md:py-5 mt-auto relative z-10' onSubmit={handleSubmit}>
+			<div className='w-full relative flex items-center gap-5'>
 				<div className='relative flex-1 group'>
 					<input
 						type='text'
-						className='w-full input h-14 px-6 text-[0.95rem] font-medium'
-						placeholder='Type a message...'
+						className='w-full input-field h-14 px-8 text-[1rem] shadow-2xl !rounded-2xl'
+						placeholder='Send a message...'
 						value={message}
 						onChange={handleInputChange}
 					/>
 				</div>
 				<button
 					type='submit'
-					className='btn btn-primary h-14 w-14 rounded-2xl flex items-center justify-center p-0 transition-all duration-300'
+					className='btn-primary h-14 w-14 flex items-center justify-center !p-0 !rounded-2xl shadow-2xl transition-all duration-500 relative'
 					disabled={loading}
 				>
-					{loading ? <div className='loading loading-spinner text-black'></div> : <BsSend className='w-5 h-5' />}
+					{loading ? <div className='loading loading-spinner text-black'></div> : <BsSend className='w-4 h-4 -translate-x-[2px] translate-y-[2px]' />}
 				</button>
 			</div>
 		</form>

@@ -1,139 +1,213 @@
+# # ╔══════════════════════════════════════════════════════════════════════════════╗
+# # ║                    CHATR HELM CHART — values.yaml                          ║
+# # ║  DEFAULT configuration (overridden by values-prod.yaml in production)      ║
+# # ╚══════════════════════════════════════════════════════════════════════════════╝
+
+# global:
+#   namespace: chatr
+#   imageRegistry: "" # Overridden in prod
+
+# backend:
+#   replicaCount: 1
+#   image:
+#     repository: chatr-backend
+#     tag: "v2" # ✅ CHANGED: Default to v2 (correct AMD64 build)
+#     pullPolicy: Always
+#   port: 5001
+#   service:
+#     type: ClusterIP
+#     port: 5001
+#   resources:
+#     requests:
+#       cpu: 100m
+#       memory: 100Mi
+#     limits:
+#       cpu: 400m
+#       memory: 512Mi
+#   livenessProbe:
+#     path: /api/health
+#     port: 5001
+#     initialDelaySeconds: 15
+#     periodSeconds: 20
+#   readinessProbe:
+#     path: /api/health
+#     port: 5001
+#     initialDelaySeconds: 10
+#     periodSeconds: 5
+
+# config:
+#   nodeEnv: development # ✅ CHANGED: dev default (prod overrides this)
+#   redisHost: redis
+#   redisPort: "6379"
+#   allowedOrigins: "http://localhost"
+#   useHttps: "false"
+
+# secrets:
+#   jwtSecret: "dev-secret-change-in-prod" # ✅ CHANGED: Clear it's for dev
+#   mongoDbUri: "mongodb://chatr_admin:${mongodbRootPassword}@mongodb:27017/chatapp?authSource=admin"
+
+# mongodb:
+#   enabled: true
+#   replicaCount: 1
+#   image:
+#     repository: mongo
+#     tag: "7"
+#     pullPolicy: IfNotPresent
+#   port: 27017
+#   service:
+#     type: ClusterIP
+#     clusterIP: None
+#     port: 27017
+#   auth:
+#     rootUsername: chatr_admin
+#     mongodbRootPassword: "devmongo59"
+#   persistence:
+#     size: 5Gi
+#   resources:
+#     requests:
+#       cpu: 100m
+#       memory: 200Mi
+#     limits:
+#       cpu: 400m
+#       memory: 1Gi
+#   livenessProbe:
+#     port: 27017
+#     initialDelaySeconds: 15
+#     periodSeconds: 20
+#   readinessProbe:
+#     port: 27017
+#     initialDelaySeconds: 10
+#     periodSeconds: 5
+
+# redis:
+#   enabled: true
+#   replicaCount: 1
+#   image:
+#     repository: redis
+#     tag: "7-alpine"
+#     pullPolicy: IfNotPresent
+#   port: 6379
+#   service:
+#     type: ClusterIP
+#     port: 6379
+#   resources:
+#     requests:
+#       cpu: 50m
+#       memory: 64Mi
+#     limits:
+#       cpu: 150m
+#       memory: 256Mi
+#   livenessProbe:
+#     initialDelaySeconds: 10
+#     periodSeconds: 15
+#   readinessProbe:
+#     initialDelaySeconds: 5
+#     periodSeconds: 5
+
+# nginx:
+#   replicaCount: 1
+#   image:
+#     repository: chatr-nginx
+#     tag: "v2" # ✅ CHANGED: Default to v2
+#     pullPolicy: Always # ✅ CHANGED: Always pull for consistency
+#   port: 80
+#   service:
+#     type: LoadBalancer # Dev uses LoadBalancer, prod switches to ClusterIP
+#     port: 80
+#   resources:
+#     requests:
+#       cpu: 50m
+#       memory: 64Mi
+#     limits:
+#       cpu: 150m
+#       memory: 256Mi
+#   livenessProbe:
+#     path: /
+#     port: 80
+#     initialDelaySeconds: 10
+#     periodSeconds: 20
+#   readinessProbe:
+#     path: /
+#     port: 80
+#     initialDelaySeconds: 5
+#     periodSeconds: 10
+
+# ingress:
+#   enabled: false # Disabled by default, enabled in prod
+#   className: nginx
+#   host: ""
+#   annotations: {}
+#   tls: []
+
 # ╔══════════════════════════════════════════════════════════════════════════════╗
 # ║                    CHATR HELM CHART — values.yaml                          ║
-# ║                                                                            ║
-# ║  This is the DEFAULT configuration for your chart.                         ║
-# ║  Every {{ .Values.xxx }} in your templates reads from this file.           ║
-# ║                                                                            ║
-# ║  HOW OVERRIDES WORK (priority low → high):                                ║
-# ║    1. This file (values.yaml)          ← defaults                          ║
-# ║    2. values-prod.yaml via -f flag     ← environment overrides             ║
-# ║    3. --set flag on CLI                ← one-off overrides                 ║
-# ║                                                                            ║
-# ║  Example:                                                                  ║
-# ║    helm install chatr ./chatr-chart -f values-prod.yaml --set backend.replicaCount=5 ║
+# ║  DEFAULT configuration (overridden by values-prod.yaml in production)      ║
 # ╚══════════════════════════════════════════════════════════════════════════════╝
 
-# ─────────────────────────────────────────────────────────────────────────────
-# GLOBAL SETTINGS
-# These are shared across ALL services in the chart.
-# ─────────────────────────────────────────────────────────────────────────────
 global:
-  # The namespace is NOT hardcoded in templates anymore.
-  # Instead, pass it at deploy time: helm install chatr ./chatr-chart -n chatr --create-namespace
-  # But if you want a default namespace label, you can set it here:
   namespace: chatr
+  imageRegistry: "" # Overridden in prod
 
-  # Container image registry prefix.
-  # All your custom images (backend, nginx) live in this registry.
-  # Redis and MongoDB use public images, so they don't need this.
-  imageRegistry: ""
-
-# ─────────────────────────────────────────────────────────────────────────────
-# BACKEND (Node.js API Server)
-# Template files: backend-deployment.yml, backend-service.yml
-# ─────────────────────────────────────────────────────────────────────────────
 backend:
-  # Number of backend pods to run.
-  # For dev: 1, for production: 2-5  (more pods = more availability)
   replicaCount: 1
-
   image:
-    # Full image path is built as: {{ .Values.global.imageRegistry }}/{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}
-    # Result: asia-south1-docker.pkg.dev/.../chatr-backend:v1
     repository: chatr-backend
-    tag: ""  # Empty string means: use Chart.appVersion (which is "v1")
-    pullPolicy: Always  # Always = always check registry for latest. Use IfNotPresent for local dev.
-
-  # The port your Node.js server listens on (process.env.PORT)
+    tag: "v2"
+    pullPolicy: Always
   port: 5001
-
   service:
-    type: ClusterIP  # ClusterIP = internal only. The nginx service is the one exposed externally.
+    type: ClusterIP
     port: 5001
-
-  # CPU & Memory limits.
-  # requests = "I need at least this much" (Kubernetes guarantees this)
-  # limits   = "never use more than this"  (Kubernetes kills pod if exceeded)
   resources:
     requests:
-      cpu: 100m       # 100 millicores = 0.1 CPU core
-      memory: 100Mi   # 100 MiB RAM
+      cpu: 100m
+      memory: 100Mi
     limits:
-      cpu: 400m       # 0.4 CPU core max
-      memory: 512Mi   # 512 MiB RAM max
-
-  # Health checks — Kubernetes uses these to know if your pod is alive and ready
+      cpu: 400m
+      memory: 512Mi
   livenessProbe:
     path: /api/health
     port: 5001
-    initialDelaySeconds: 15  # Wait 15s after start before first check
-    periodSeconds: 20        # Check every 20s after that
+    initialDelaySeconds: 15
+    periodSeconds: 20
   readinessProbe:
     path: /api/health
     port: 5001
     initialDelaySeconds: 10
     periodSeconds: 5
 
-# ─────────────────────────────────────────────────────────────────────────────
-# BACKEND CONFIG (ConfigMap values)
-# Template file: configmap.yml
-# These become environment variables in the backend container.
-# ─────────────────────────────────────────────────────────────────────────────
 config:
-  nodeEnv: production
+  nodeEnv: development
   redisHost: redis
   redisPort: "6379"
-  allowedOrigins: "http://localhost"  # CORS allowed origins
+  allowedOrigins: "http://localhost"
   useHttps: "false"
 
-# ─────────────────────────────────────────────────────────────────────────────
-# BACKEND SECRETS
-# Template file: backend-secret.yml
-#
-# ⚠️  WARNING: These are DEFAULT values for development only!
-# In production, NEVER commit real secrets to values.yaml.
-# Instead, override them at deploy time:
-#   helm install chatr ./chatr-chart --set secrets.jwtSecret=YOUR_REAL_SECRET
-# Or use an external secret manager (e.g., Google Secret Manager + External Secrets Operator)
-# ─────────────────────────────────────────────────────────────────────────────
+# 🔐 FIXED: No full Mongo URI anymore
 secrets:
-  jwtSecret: "CHANGE_ME_IN_PRODUCTION"
-  mongoDbUri: "mongodb://chatr_admin:devmongo59@mongodb:27017/chatapp?authSource=admin"
+  jwtSecret: "dev-secret-change-in-prod"
 
-# ─────────────────────────────────────────────────────────────────────────────
-# MONGODB (Database — runs as StatefulSet for persistent storage)
-# Template files: mongo-statefulset.yml, mongo-service.yml, mongo-secret.yml
-# ─────────────────────────────────────────────────────────────────────────────
+  mongo:
+    username: "chatr_admin"
+    password: "devmongo59"
+
 mongodb:
-  # Set to false if you use an external MongoDB (e.g., MongoDB Atlas).
-  # When false, the StatefulSet, Service, and Secret won't be deployed.
   enabled: true
-
   replicaCount: 1
-
   image:
     repository: mongo
     tag: "7"
-    pullPolicy: IfNotPresent  # Public image, no need to always pull
-
+    pullPolicy: IfNotPresent
   port: 27017
-
   service:
     type: ClusterIP
-    clusterIP: None  # "None" makes it a Headless Service (required for StatefulSets)
+    clusterIP: None
     port: 27017
-
-  # MongoDB root credentials
-  # Same warning as above — override in production!
   auth:
     rootUsername: chatr_admin
-    rootPassword: "devmongo59"
-
-  # Persistent storage for MongoDB data
+    mongodbRootPassword: "devmongo59"  # ⚠️ must match secrets.mongo.password
   persistence:
     size: 5Gi
-    # storageClassName: ""  # Leave empty to use cluster default (GKE uses standard-rwo)
-
   resources:
     requests:
       cpu: 100m
@@ -141,7 +215,6 @@ mongodb:
     limits:
       cpu: 400m
       memory: 1Gi
-
   livenessProbe:
     port: 27017
     initialDelaySeconds: 15
@@ -151,28 +224,17 @@ mongodb:
     initialDelaySeconds: 10
     periodSeconds: 5
 
-# ─────────────────────────────────────────────────────────────────────────────
-# REDIS (In-memory cache for sessions/pub-sub)
-# Template files: redis-deployment.yml, redis-service.yml
-# ─────────────────────────────────────────────────────────────────────────────
 redis:
-  # Set to false if you use an external Redis (e.g., Google Memorystore).
-  # When false, redis-deployment.yml and redis-service.yml won't be deployed.
   enabled: true
-
   replicaCount: 1
-
   image:
     repository: redis
     tag: "7-alpine"
     pullPolicy: IfNotPresent
-
   port: 6379
-
   service:
     type: ClusterIP
     port: 6379
-
   resources:
     requests:
       cpu: 50m
@@ -180,7 +242,6 @@ redis:
     limits:
       cpu: 150m
       memory: 256Mi
-
   livenessProbe:
     initialDelaySeconds: 10
     periodSeconds: 15
@@ -188,26 +249,16 @@ redis:
     initialDelaySeconds: 5
     periodSeconds: 5
 
-# ─────────────────────────────────────────────────────────────────────────────
-# NGINX (Frontend + Reverse Proxy)
-# Template files: nginx-deployment.yml, nginx-service.yml
-# ─────────────────────────────────────────────────────────────────────────────
 nginx:
   replicaCount: 1
-
   image:
-    # This is YOUR custom nginx image (with React build + nginx config baked in)
     repository: chatr-nginx
-    tag: ""  # Empty = use Chart.appVersion ("v1")
-    
-
+    tag: "v2"
+    pullPolicy: Always
   port: 80
-
   service:
-    # LoadBalancer = gets a public IP from GKE. Use NodePort for local clusters.
     type: LoadBalancer
     port: 80
-
   resources:
     requests:
       cpu: 50m
@@ -215,7 +266,6 @@ nginx:
     limits:
       cpu: 150m
       memory: 256Mi
-
   livenessProbe:
     path: /
     port: 80
@@ -226,3 +276,10 @@ nginx:
     port: 80
     initialDelaySeconds: 5
     periodSeconds: 10
+
+ingress:
+  enabled: false
+  className: nginx
+  host: ""
+  annotations: {}
+  tls: []

@@ -20,7 +20,7 @@ const Messages = () => {
 	}, [displayMessages]);
 
 	return (
-		<div className='px-4 flex-1 overflow-auto custom-scrollbar'>
+		<div className='px-4 flex-1 overflow-auto scrollbar-hide pb-4'>
 			{!isLoading &&
 				displayMessages.length > 0 &&
 				displayMessages.map((message: MessageType) => (
@@ -33,16 +33,28 @@ const Messages = () => {
 
 			{isLoading && [...Array(3)].map((_, idx) => <MessageSkeleton key={idx} />)}
 			{!isLoading && displayMessages.length === 0 && (
-				<div className='flex flex-col items-center justify-center h-full opacity-30 animate-fade-in'>
-					<div className='w-16 h-16 rounded-full bg-white/[0.03] flex items-center justify-center mb-4 border border-white/5'>
-						<TiMessages className='text-3xl text-volt/40' />
+				<div className='flex flex-col items-center pt-20 animate-fade-in'>
+					{/* Chat Origin Info */}
+					<div className="flex flex-col items-center mb-8">
+						<div className="w-20 h-20 rounded-full border border-white/10 p-1 mb-4 bg-white/5">
+							<img 
+								src={selectedConversation?.profilePic} 
+								className="w-full h-full object-cover rounded-full opacity-40"
+								alt=""
+							/>
+						</div>
+						<p className='text-center text-xs font-black uppercase tracking-[0.4em] text-white/40'>
+							Say hi to <span className="text-white/60">{selectedConversation?.fullName.split(" ")[0]}</span> 👋!
+						</p>
 					</div>
-					<p className='text-center text-sm font-medium tracking-tight text-white/60'>
-						Start a conversation with {selectedConversation?.fullName.split(" ")[0]}
-					</p>
-					<p className='text-center text-[10px] mt-1 text-white/20 uppercase tracking-[0.2em] font-bold'>
-						Encrypted & Private
-					</p>
+
+					{/* System Privacy Pill */}
+					<div className="px-4 py-1.5 rounded-lg bg-white/[0.02] border border-white/[0.05] flex items-center gap-2">
+						<div className="w-1 h-1 rounded-full bg-[#ccff00]/40"></div>
+						<p className="text-[9px] text-white/50 font-bold uppercase tracking-[0.3em]">
+							Secure & Encrypted
+						</p>
+					</div>
 				</div>
 			)}
 		</div>

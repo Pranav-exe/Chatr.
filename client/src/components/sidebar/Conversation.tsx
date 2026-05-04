@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useSocketContext } from "../../context/SocketContext";
 import useConversation, { ConversationType } from "../../zustand/useConversation";
 
@@ -15,6 +16,9 @@ const Conversation = ({ conversation, lastIdx, emoji }: ConversationProps) => {
 	const { onlineUsers } = useSocketContext();
 	const isOnline = onlineUsers.includes(conversation._id);
 
+	// Memoize emoji to prevent "flashing" on re-renders
+	const stableEmoji = useMemo(() => emoji, []);
+
 	const highlightMatch = (text: string, query: string) => {
 		if (!query) return text;
 		const parts = text.split(new RegExp(`(${query})`, "gi"));
@@ -22,7 +26,7 @@ const Conversation = ({ conversation, lastIdx, emoji }: ConversationProps) => {
 			<span>
 				{parts.map((part, i) =>
 					part.toLowerCase() === query.toLowerCase() ? (
-						<span key={i} className="text-volt font-black underline underline-offset-2">
+						<span key={i} className="text-volt font-bold underline underline-offset-2">
 							{part}
 						</span>
 					) : (
@@ -39,22 +43,27 @@ const Conversation = ({ conversation, lastIdx, emoji }: ConversationProps) => {
 	};
 
 	return (
-		<>
+		<div className="relative group mb-1">
 			<div
-				className={`flex gap-4 items-center hover:bg-white/[0.03] rounded-[1.25rem] p-3.5 cursor-pointer transition-all duration-500 group relative
-				${isSelected ? "bg-white/[0.05] border border-white/5 shadow-xl scale-[1.02]" : "border border-transparent"}
-			`}
+				className="flex gap-4 items-center p-4 cursor-pointer relative transition-all duration-300"
 				onClick={handleClick}
 			>
-				<div className={`avatar ${isOnline ? "online" : "offline"} ${isOnline ? "glow-online" : ""}`}>
-					<div className={`w-11 h-11 rounded-full border border-white/10 group-hover:border-volt/30 transition-all duration-500 ring-4 ring-transparent group-hover:ring-volt/5 bg-white/5 animate-pulse overflow-hidden ${isOnline ? 'status-online' : ''}`}>
+				{/* ⚡ Volt Indicator - High-contrast stable indicator */}
+				<div 
+					className={`absolute left-0 w-[3px] rounded-r-full bg-[#ccff00] transition-all duration-300 ease-out
+						${isSelected ? "h-6 opacity-100" : "h-0 opacity-0 group-hover:h-4 group-hover:opacity-50"}
+					`}
+				/>
+
+				{/* Avatar Container */}
+				<div className="relative pointer-events-none ml-2">
+					<div className="w-12 h-12 rounded-full border border-white/5 bg-white/5 overflow-hidden">
 						<img
 							src={conversation.profilePic}
 							alt='user avatar'
 							className='w-full h-full object-cover opacity-0 transition-opacity duration-300'
 							onLoad={(e) => {
 								const target = e.target as HTMLImageElement;
-								target.parentElement?.classList.remove('animate-pulse');
 								target.classList.remove('opacity-0');
 							}}
 							onError={(e) => {
@@ -64,36 +73,41 @@ const Conversation = ({ conversation, lastIdx, emoji }: ConversationProps) => {
 									const normalizedSeed = encodeURIComponent(conversation.username.replace(/\s+/g, "_"));
 									const gender = conversation.gender === "female" ? "female" : "male";
 									target.src = gender === "male"
-										? `https://api.dicebear.com/9.x/avataaars/svg?seed=${normalizedSeed}&top=shortRound,theCaesar,shortWaved,sides,shortFlat,shavedSides&backgroundType=gradientLinear&backgroundColor=b6e3f4,c0aede,d1d4f9,a1c4fd,c2e9fb,8fd3f4,a6c0fe,d4fc79,96e6a1,84fab0,e0c3fc,8ec5fc`
-										: `https://api.dicebear.com/9.x/avataaars/svg?seed=${normalizedSeed}&top=longButNotTooLong,straight01,straight02,bigHair,bob,curly,curvy,dreads&backgroundType=gradientLinear&backgroundColor=ffdfbf,ffd5dc,d1d4f9,ff9a9e,fecfef,fbc2eb,a18cd1,f68084,fccb90,d57eeb,fad0c4,ffecd2`;
+										? `https://api.dicebear.com/9.x/avataaars/svg?seed=${normalizedSeed}&top=shortRound,theCaesar,shortWaved,sides,shortFlat,shavedSides&backgroundType=solid&backgroundColor=4a5568,2d3748,4a4458,2c3e50,34495e,7f8c8d,1a202c,2d3748`
+										: `https://api.dicebear.com/9.x/avataaars/svg?seed=${normalizedSeed}&top=longButNotTooLong,straight01,straight02,bigHair,bob,curly,curvy,dreads&backgroundType=solid&backgroundColor=4a5568,4a4458,2c3e50,34495e,7f8c8d,1a202c,2d3748`;
 								} else {
 									target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(conversation.fullName)}&background=random`;
 								}
-								target.parentElement?.classList.remove('animate-pulse');
 								target.classList.remove('opacity-0');
 							}}
 						/>
 					</div>
-				</div>
-
-				<div className='flex flex-col flex-1 min-w-0'>
-					<div className='flex justify-between items-center'>
-						<p className={`font-semibold text-[0.92rem] truncate tracking-tight transition-colors ${isSelected ? "text-volt" : "text-white/80 group-hover:text-white"}`}>
-							{highlightMatch(conversation.fullName, searchQuery)}
-						</p>
-						<span className='text-lg grayscale group-hover:grayscale-0 transition-all duration-300'>{emoji}</span>
-					</div>
-					{unreadCount > 0 && (
-						<div className='flex items-center gap-1 animate-fade-in mt-1'>
-							<span className='text-[10px] font-bold text-volt tracking-wider uppercase animate-pulse'>+ New Message</span>
-							<div className='w-2 h-2 rounded-full bg-volt shadow-[0_0_10px_#ccff00]'></div>
-						</div>
+					{isOnline && (
+						<div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[#ccff00] rounded-full border-[2.5px] border-[#0a0a0b] shadow-[0_0_10px_rgba(204,255,0,0.5)]"></div>
 					)}
 				</div>
-			</div>
 
-			{!lastIdx && <div className='divider my-1 opacity-5 before:bg-white after:bg-white px-3' />}
-		</>
+				{/* Info Container */}
+				<div className='flex flex-col flex-1 min-w-0 pointer-events-none'>
+					<div className='flex justify-between items-center'>
+						<p className={`font-bold text-[1rem] truncate tracking-tight transition-colors duration-300 ${isSelected ? "text-white" : "text-white/60 group-hover:text-white/80"}`}>
+							{highlightMatch(conversation.fullName, searchQuery)}
+						</p>
+						<span className={`text-xl transition-all duration-500 ease-out 
+							${isSelected ? "grayscale-0 scale-110" : "grayscale group-hover:grayscale-0 group-hover:scale-125"}
+							group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]
+						`}>
+							{stableEmoji}
+						</span>
+					</div>
+				</div>
+
+				{/* Unread Indicator */}
+				{unreadCount > 0 && (
+					<div className="w-2 h-2 rounded-full bg-[#ccff00] shadow-[0_0_10px_rgba(204,255,0,0.5)] mr-2" />
+				)}
+			</div>
+		</div>
 	);
 };
 export default Conversation;

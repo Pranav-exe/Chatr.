@@ -15,3 +15,6 @@ secrets.yaml
 
 # OS
 .DS_Store
+helm/values-prod.yaml
+/values-prod.yaml
+values-prod.yaml

@@ -10,17 +10,16 @@ const UserProfile = () => {
 
     return (
         <div className="mt-auto pt-6 border-t border-white/5">
-            <div className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all duration-300 group">
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-[#ccff00]/[0.03] border border-[#ccff00]/10 hover:bg-[#ccff00]/[0.06] shadow-lg transition-all duration-300 group">
                 <div className="flex items-center gap-3 min-w-0">
                     <div className="relative">
-                        <div className="w-10 h-10 rounded-full border border-volt/20 p-0.5 group-hover:border-volt/50 transition-colors bg-white/5 animate-pulse overflow-hidden">
+                        <div className="w-11 h-11 rounded-full border border-white/5 p-0.5 bg-white/5 overflow-hidden">
                             <img
                                 src={authUser.profilePic}
                                 alt="user"
                                 className="rounded-full w-full h-full object-cover opacity-0 transition-opacity duration-300"
                                 onLoad={(e) => {
                                     const target = e.target as HTMLImageElement;
-                                    target.parentElement?.classList.remove("animate-pulse");
                                     target.classList.remove("opacity-0");
                                 }}
                                 onError={(e) => {
@@ -35,18 +34,17 @@ const UserProfile = () => {
                                     } else {
                                         target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(authUser.fullName)}&background=random`;
                                     }
-                                    target.parentElement?.classList.remove("animate-pulse");
                                     target.classList.remove("opacity-0");
                                 }}
                             />
                         </div>
-                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-volt rounded-full border-2 border-[#121215]"></div>
+                        <div className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 bg-[#ccff00] rounded-full border-2 border-[#050505] shadow-[0_0_10px_rgba(204,255,0,0.5)]"></div>
                     </div>
                     <div className="flex flex-col min-w-0">
-                        <span className="text-[0.9rem] font-bold text-white truncate leading-none mb-1">
+                        <span className="text-[0.95rem] font-bold text-white truncate leading-tight">
                             {authUser.fullName}
                         </span>
-                        <span className="text-[10px] text-white/30 font-semibold tracking-tighter truncate">
+                        <span className="text-[10px] text-white/60 font-semibold uppercase tracking-[0.2em] mt-0.5 truncate">
                             @{authUser.username}
                         </span>
                     </div>
@@ -55,8 +53,8 @@ const UserProfile = () => {
                 <button
                     onClick={logout}
                     disabled={loading}
-                    className="p-2 rounded-xl hover:bg-red-500/10 text-white/20 hover:text-red-400 transition-all duration-300"
-                    title="Logout Session"
+                    className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 hover:bg-red-500/10 text-white/20 hover:text-red-400 hover:border-red-500/20 transition-all duration-500"
+                    title="Terminate Session"
                 >
                     {loading ? (
                         <span className="loading loading-spinner loading-xs"></span>

@@ -27,4 +27,8 @@ data:
   ALLOWED_ORIGINS: {{ .Values.config.allowedOrigins | quote }}
   # ── HTTPS ──
   USE_HTTPS: {{ .Values.config.useHttps | quote }}
-  # NOTE: MONGO_DB_URI is in the Secret (not here) because it contains credentials
+  # ── MongoDB ──
+  MONGO_HOST: "mongodb"
+  MONGO_PORT: {{ .Values.mongodb.port | quote }}
+  MONGO_DB: "chatapp"
+

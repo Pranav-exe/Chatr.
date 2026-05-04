@@ -73,3 +73,26 @@ nginx:
     limits:
       cpu: 100m
       memory: 128Mi
+
+# ── INGRESS (Local Development) ─────────────────────────────────
+# Enable this to practice Ingress routing locally on OrbStack.
+#
+# SETUP (one-time):
+#   1. Install nginx-ingress-controller:
+#      helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+#      helm install ingress-nginx ingress-nginx/ingress-nginx \
+#        --namespace ingress-nginx --create-namespace
+#
+#   2. Add hostname to /etc/hosts:
+#      echo "127.0.0.1 chatr.local" | sudo tee -a /etc/hosts
+#
+#   3. Deploy: helm install chatr ./Helm -f ./Helm/values-dev.yaml -n chatr-dev --create-namespace
+#   4. Open: http://chatr.local
+#
+# NOTE: When ingress.enabled = true, the nginx service type above (NodePort)
+# gets OVERRIDDEN to ClusterIP automatically by the template.
+# ─────────────────────────────────────────────────────────────────
+ingress:
+  enabled: true
+  className: nginx
+  host: "chatr.local"

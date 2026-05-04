@@ -31,15 +31,16 @@ export const SocketContextProvider = ({ children }: { children: ReactNode }) => 
       return;
     }
 
+    // Dynamic URL: Use local backend for dev ports, otherwise use current origin (Production GKE)
     const socketUrl =
-      window.location.port === "5173" || window.location.port === "3000"
+      window.location.port === "3000" || window.location.port === "5173"
         ? "http://localhost:5001"
         : window.location.origin;
 
     const newSocket = io(socketUrl, {
       query: { userId: authUser._id },
       withCredentials: true,
-      transports: ["websocket"],
+      // We allow default transports (polling -> websocket) for better stability in both Dev and GKE
     });
 
     setSocket(newSocket);

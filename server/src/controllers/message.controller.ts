@@ -60,6 +60,12 @@ export const getMessages = async (req: Request, res: Response) => {
 
     if (!conversation) return res.status(200).json([]);
 
+    // ⚡ Mark messages as read when opening conversation
+    await Message.updateMany(
+      { senderId: userToChatId, receiverId: senderId, isRead: false },
+      { $set: { isRead: true } },
+    );
+
     res.status(200).json(conversation.messages);
   } catch (error: any) {
     console.error("Error in getMessages controller:", error.message);

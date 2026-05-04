@@ -14,17 +14,17 @@ const Message = ({ message }: MessageProps) => {
 	const formattedTime = extractTime(message.createdAt);
 	const chatClassName = fromMe ? "chat-end" : "chat-start";
 	const profilePic = fromMe ? authUser?.profilePic : selectedConversation?.profilePic;
-	// Balanced dual-tone system: dimmed volt but still highlighted
+	// High-contrast dual-tone bubble system
 	const bubbleClasses = fromMe
-		? "chat-bubble-me text-white font-medium rounded-2xl rounded-tr-none px-4 py-2.5"
-		: "chat-bubble-other text-white/90 rounded-2xl rounded-tl-none px-4 py-2.5 relative after:absolute after:inset-0 after:rounded-2xl after:bg-white/[0.01]";
+		? "chat-bubble-me text-white font-medium rounded-2xl rounded-tr-none px-5 py-3 shadow-xl"
+		: "chat-bubble-other text-white/90 rounded-2xl rounded-tl-none px-5 py-3 shadow-lg";
 
 	const shakeClass = message.shouldShake ? "shake" : "";
 
 	return (
-		<div className={`chat ${chatClassName} mb-3 group animate-fade-in`}>
+		<div className={`chat ${chatClassName} mb-4 group animate-fade-in`}>
 			<div className='chat-image avatar'>
-				<div className='w-9 h-9 rounded-full border border-white/10 transition-all duration-300 group-hover:border-volt/30 bg-white/5 animate-pulse overflow-hidden'>
+				<div className='w-10 h-10 rounded-full border border-white/10 transition-all duration-300 group-hover:border-[#00f5ff]/30 bg-white/5 animate-pulse overflow-hidden'>
 					<img
 						alt='Avatar'
 						src={profilePic}
@@ -42,8 +42,8 @@ const Message = ({ message }: MessageProps) => {
 								const normalizedSeed = encodeURIComponent(userObj?.username?.replace(/\s+/g, "_") || "default");
 								const gender = userObj?.gender === "female" ? "female" : "male";
 								target.src = gender === "male"
-									? `https://api.dicebear.com/9.x/avataaars/svg?seed=${normalizedSeed}&top=shortRound,theCaesar,shortWaved,sides,shortFlat,shavedSides&backgroundType=gradientLinear&backgroundColor=b6e3f4,c0aede,d1d4f9,a1c4fd,c2e9fb,8fd3f4,a6c0fe,d4fc79,96e6a1,84fab0,e0c3fc,8ec5fc`
-									: `https://api.dicebear.com/9.x/avataaars/svg?seed=${normalizedSeed}&top=longButNotTooLong,straight01,straight02,bigHair,bob,curly,curvy,dreads&backgroundType=gradientLinear&backgroundColor=ffdfbf,ffd5dc,d1d4f9,ff9a9e,fecfef,fbc2eb,a18cd1,f68084,fccb90,d57eeb,fad0c4,ffecd2&mouth=smile,default&eyebrows=default`;
+									? `https://api.dicebear.com/9.x/avataaars/svg?seed=${normalizedSeed}&top=shortRound,theCaesar,shortWaved,sides,shortFlat,shavedSides&backgroundType=solid&backgroundColor=4a5568,2d3748,4a4458,2c3e50,34495e,7f8c8d,1a202c,2d3748`
+									: `https://api.dicebear.com/9.x/avataaars/svg?seed=${normalizedSeed}&top=longButNotTooLong,straight01,straight02,bigHair,bob,curly,curvy,dreads&backgroundType=solid&backgroundColor=4a5568,4a4458,2c3e50,34495e,7f8c8d,1a202c,2d3748&mouth=smile,default&eyebrows=default`;
 							} else {
 								target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fromMe ? authUser?.fullName || "" : selectedConversation?.fullName || "")}&background=random`;
 							}
@@ -54,14 +54,15 @@ const Message = ({ message }: MessageProps) => {
 				</div>
 			</div>
 
-			<div className='flex flex-col gap-1 max-w-[80%]'>
+			<div className='flex flex-col gap-1.5 max-w-[85%] md:max-w-[75%]'>
 				<div className={`chat-bubble min-h-0 bg-transparent p-0 shadow-none ${shakeClass}`}>
-					<div className={`text-[0.95rem] leading-relaxed font-[450] ${bubbleClasses}`}>
+					<div className={`text-[0.95rem] leading-relaxed font-bold ${bubbleClasses} break-words whitespace-pre-wrap`}>
 						{message.message}
 					</div>
 				</div>
-				<div className={`chat-footer opacity-60 text-[10px] flex gap-1 items-center px-1.5 font-bold tracking-tight mt-1 ${fromMe ? 'justify-end text-volt' : 'justify-start text-white/60'}`}>
+				<div className={`chat-footer opacity-60 text-[9px] flex gap-2 items-center px-2 font-black uppercase tracking-[0.3em] mt-2 ${fromMe ? 'justify-end text-[#ccff00]' : 'justify-start text-white/60'}`}>
 					{formattedTime}
+					{fromMe && <div className="w-1.5 h-1.5 rounded-full bg-[#ccff00] shadow-[0_0_8px_#ccff00]"></div>}
 				</div>
 			</div>
 		</div>

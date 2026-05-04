@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { motion } from "framer-motion";
 import useConversation from "../../zustand/useConversation";
 import MessageInput from "./MessageInput";
 import Messages from "./Messages";
@@ -23,81 +24,54 @@ const MessageContainer = () => {
 	}, [setSelectedConversation]);
 
 	return (
-		<div className="flex-1 flex flex-col glass-chat relative h-full overflow-hidden">
-			<div className="chat-pattern"></div>
+		<div className="flex-1 flex flex-col bg-transparent relative h-full overflow-hidden border-l border-white/[0.05]">
+
 			{!selectedConversation ? (
 				<NoChatSelected />
 			) : (
 				<>
 					{/* Header */}
-					<div className="secondary-glass px-4 md:px-6 py-4 flex items-center justify-between z-10 shard-header">
-						<div className="flex items-center gap-3">
+					<div className="h-20 px-8 flex items-center justify-between border-b border-white/[0.04] bg-transparent backdrop-blur-md z-20">
+						<div className="flex items-center gap-5">
 							<button
 								onClick={() => setSelectedConversation(null)}
-								className="md:hidden text-white/60 hover:text-white transition-colors p-1"
+								className="md:hidden text-white/30 hover:text-white transition-colors p-2 rounded-xl hover:bg-white/5"
 							>
 								<IoArrowBack size={24} />
 							</button>
-							<div className={`w-11 h-11 rounded-full border border-white/5 p-0.5 bg-white/5 animate-pulse overflow-hidden transition-all duration-500 ${isOnline ? "glow-online border-volt" : "border-white/10"}`}>
-								<img
-									src={selectedConversation.profilePic}
-									alt=""
-									className="w-full h-full object-cover rounded-full opacity-0 transition-opacity duration-300"
-									onLoad={(e) => {
-										const target = e.target as HTMLImageElement;
-										target.parentElement?.classList.remove("animate-pulse");
-										target.classList.remove("opacity-0");
-									}}
-									onError={(e) => {
-										const target = e.target as HTMLImageElement;
-										if (!target.dataset.retried) {
-											target.dataset.retried = "true";
-											const userObj = selectedConversation; // In this context, the user is selectedConversation
-											const normalizedSeed = encodeURIComponent(
-												userObj?.username?.replace(/\s+/g, "_") || "default",
-											);
-											const gender =
-												userObj?.gender === "female" ? "female" : "male";
-											target.src = gender === "male"
-												? `https://api.dicebear.com/9.x/avataaars/svg?seed=${normalizedSeed}&top=shortRound,theCaesar,shortWaved,sides,shortFlat,shavedSides&backgroundType=gradientLinear&backgroundColor=b6e3f4,c0aede,d1d4f9,a1c4fd,c2e9fb,8fd3f4,a6c0fe,d4fc79,96e6a1,84fab0,e0c3fc,8ec5fc`
-												: `https://api.dicebear.com/9.x/avataaars/svg?seed=${normalizedSeed}&top=longButNotTooLong,straight01,straight02,bigHair,bob,curly,curvy,dreads&backgroundType=gradientLinear&backgroundColor=ffdfbf,ffd5dc,d1d4f9,ff9a9e,fecfef,fbc2eb,a18cd1,f68084,fccb90,d57eeb,fad0c4,ffecd2`;
-										} else {
+							
+							<div className="relative group">
+								<div className={`w-12 h-12 rounded-2xl border border-white/10 p-0.5 bg-white/5 transition-all duration-500 ${isOnline ? "shadow-[0_0_20px_rgba(204,255,0,0.2)] border-[#ccff00]/30" : ""}`}>
+									<img
+										src={selectedConversation.profilePic}
+										alt=""
+										className="w-full h-full object-cover rounded-2xl"
+										onError={(e) => {
+											const target = e.target as HTMLImageElement;
 											target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedConversation.fullName)}&background=random`;
-										}
-										target.parentElement?.classList.remove("animate-pulse");
-										target.classList.remove("opacity-0");
-									}}
-								/>
+										}}
+									/>
+								</div>
+								{isOnline && (
+									<div className="absolute -bottom-1 -right-1 w-3 h-3 bg-[#ccff00] rounded-full border-[2.5px] border-[#0a0a0b] shadow-[0_0_10px_#ccff00]"></div>
+								)}
 							</div>
-							<div className="flex flex-col">
-								<div className="flex items-center gap-2">
-									<span className="text-white font-bold tracking-tight leading-tight text-lg">
-										{selectedConversation.fullName}
-									</span>
-									<span className="text-xs text-white/30 font-medium tracking-tight mt-0.5 leading-none">
-										@{selectedConversation.username}
-									</span>
-								</div>
-								<div className="flex items-center gap-1.5">
-									<div
-										className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-volt animate-pulse" : "bg-white/20"}`}
-									></div>
-									<span
-										className={`text-[10px] font-black uppercase tracking-widest ${isOnline ? "text-volt opacity-80" : "text-white/40"}`}
-									>
-										{isOnline
-											? "Online"
-											: `Last seen ${formatLastSeen(selectedConversation.lastSeen)}`}
-									</span>
-								</div>
+
+							<div className="flex flex-col min-w-0">
+								<h2 className="text-white font-bold tracking-tight text-lg leading-tight mb-0.5 truncate max-w-[150px] md:max-w-[250px]">
+									{selectedConversation.fullName}
+								</h2>
+								<p className="text-[10px] text-white/60 font-semibold uppercase tracking-[0.2em] truncate">
+									@{selectedConversation.username}
+								</p>
 							</div>
 						</div>
-						<div className="hidden sm:block">
-							<div className="px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/5">
-								<span className="text-[10px] text-white/40 font-bold uppercase tracking-widest">
-									Secure & Private Connection
-								</span>
-							</div>
+						
+						<div className="flex items-center gap-2">
+							<div className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-[#ccff00] shadow-[0_0_8px_#ccff00]" : "bg-white/10"}`}></div>
+							<span className={`text-[9px] font-black uppercase tracking-[0.3em] ${isOnline ? "text-[#ccff00]" : "text-white/70"}`}>
+								{isOnline ? "Online" : `Last Seen ${selectedConversation.lastSeen ? formatLastSeen(selectedConversation.lastSeen) : "Recently"}`}
+							</span>
 						</div>
 					</div>
 					<Messages />
@@ -108,28 +82,26 @@ const MessageContainer = () => {
 		</div>
 	);
 };
+
 export default MessageContainer;
 
 const NoChatSelected = () => {
-	const { authUser } = useAuthContext();
 	return (
-		<div className="flex items-center justify-center w-full h-full relative overflow-hidden">
-			<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-volt/[0.02] rounded-full blur-[80px] md:blur-[120px]"></div>
-			<div className="p-6 md:p-8 text-center flex flex-col items-center gap-4 md:gap-6 animate-slide-up z-10">
-				<div className="flex flex-col gap-1 md:gap-2">
-					<p className="text-2xl md:text-3xl tracking-tighter font-light text-white/40">
-						Hello, Welcome to
-					</p>
-					<h2 className="text-4xl md:text-6xl font-[900] tracking-tighter uppercase brand-font brand-glow-refined">
-						CHATR<span className="text-volt">.</span>
+		<div className="flex items-center justify-center w-full h-full bg-transparent relative overflow-hidden">
+			<div className="flex flex-col items-center gap-12 animate-fade-in z-10">
+				{/* Minimalist Brand Logo */}
+				<div className="flex flex-col items-center">
+					<h2 className="text-6xl md:text-8xl font-[900] tracking-tighter uppercase brand-font leading-none text-white select-none">
+						CHATR<span className="text-[#ccff00]">.</span>
 					</h2>
+					<div className="w-16 h-[1px] bg-white/10 mt-8"></div>
 				</div>
-				<div className="h-[1px] w-8 md:w-12 bg-white/10"></div>
-				<p className="text-white/30 text-[9px] md:text-[11px] font-semibold tracking-[0.2em] md:tracking-[0.3em] uppercase">
-					Select a friend to start chatting
-				</p>
-				<div className="p-8 md:p-10 rounded-[2rem] md:rounded-[2.5rem] bg-white/[0.02] border border-white/5 mt-2 md:mt-4 transition-all duration-700 hover:border-volt/20 hover:bg-white/[0.04]">
-					<TiMessages className="text-4xl md:text-6xl text-white/10" />
+				
+				{/* High-End Instructions */}
+				<div className="flex flex-col items-center">
+					<p className="text-[10px] text-white/40 font-black uppercase tracking-[0.5em] select-none">
+						Select a contact to begin
+					</p>
 				</div>
 			</div>
 		</div>

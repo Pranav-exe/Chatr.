@@ -6,6 +6,7 @@ export default {
       colors: {
         obsidian: "#020202",
         charcoal: "#0a0a0b",
+        primary: "#ccff00",
         volt: {
           DEFAULT: "#ccff00",
           dark: "#a3cc00",

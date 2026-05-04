@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import MessageContainer from "../../components/messages/MessageContainer";
 import Sidebar from "../../components/sidebar/Sidebar";
 import useListenMessages from "../../hooks/useListenMessages";
@@ -8,11 +9,11 @@ const Home = () => {
 	useListenMessages();
 
 	return (
-		<div className='flex h-[calc(100vh-6rem)] w-full max-w-screen-2xl rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden glass-panel volt-glow-sm shadow-2xl animate-fade-in z-10 relative'>
-			<div className={`${selectedConversation ? "hidden md:flex" : "flex"} w-full md:w-[350px] lg:w-[400px] transition-all duration-300 border-r border-white/5`}>
+		<div className='flex h-full w-full overflow-hidden glass-panel z-10 relative animate-fade'>
+			<div className={`${selectedConversation ? "hidden md:flex" : "flex"} w-full md:w-[350px] lg:w-[400px] border-r border-white/5`}>
 				<Sidebar />
 			</div>
-			<div className={`${!selectedConversation ? "hidden md:flex" : "flex"} flex-1 transition-all duration-300`}>
+			<div className={`${!selectedConversation ? "hidden md:flex" : "flex"} flex-1 bg-white/[0.01]`}>
 				<MessageContainer />
 			</div>
 		</div>

@@ -1,5 +1,4 @@
 name: Helm Chart CI
-
 on:
   push:
     branches: [main]

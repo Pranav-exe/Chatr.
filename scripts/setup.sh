@@ -24,7 +24,7 @@ gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
 echo "☁️  Creating GKE cluster (this takes 3-5 minutes)..."
 gcloud container clusters create chatr-cluster \
   --zone asia-south1-a \
-  --num-nodes 1 \
+  --num-nodes 2 \
   --machine-type e2-small \
   --disk-size 20 \
   --no-enable-autoupgrade \

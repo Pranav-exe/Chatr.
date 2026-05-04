@@ -1,10 +1,20 @@
 {{/*
   NGINX SERVICE
   
-  type: LoadBalancer → GKE provisions a public IP and Cloud Load Balancer.
-  This is the ONLY service exposed externally. Everything else is ClusterIP (internal).
+  TRAFFIC FLOW depends on whether Ingress is enabled:
   
-  Traffic flow: Internet → LoadBalancer:80 → nginx pod → /api/* → backend:5001
+  WITHOUT Ingress (ingress.enabled = false):
+    type: LoadBalancer → GKE provisions a public IP and Cloud Load Balancer.
+    Internet → LoadBalancer:80 → nginx pod → /api/* → backend:5001
+  
+  WITH Ingress (ingress.enabled = true):
+    type: ClusterIP → internal only. Ingress Controller handles external traffic.
+    Internet → Ingress Controller → ClusterIP:80 → nginx pod → /api/* → backend:5001
+  
+  WHY THE SWITCH?
+  When Ingress is enabled, the Ingress Controller already has a LoadBalancer.
+  If nginx ALSO had a LoadBalancer, you'd pay for TWO cloud LBs (waste of money).
+  So we force ClusterIP to make nginx internal-only when Ingress handles routing.
 */}}
 apiVersion: v1
 kind: Service
@@ -13,7 +23,13 @@ metadata:
   labels:
     {{- include "chatr.componentLabels" (dict "component" "nginx" "context" .) | nindent 4 }}
 spec:
+  {{- if .Values.ingress.enabled }}
+  # Ingress is handling external traffic, so this service is internal only.
+  type: ClusterIP
+  {{- else }}
+  # No Ingress — this service is the public entry point.
   type: {{ .Values.nginx.service.type }}
+  {{- end }}
   selector:
     {{- include "chatr.selectorLabels" "nginx" | nindent 4 }}
   ports:
