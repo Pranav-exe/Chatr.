@@ -25,25 +25,36 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
 
             {/* Header */}
-            <header className="h-16 md:h-20 px-6 md:px-10 flex items-center justify-between z-50">
-                <Link to="/" className="flex items-center gap-4 group">
-                    <Logo className="w-10 h-10 md:w-12 md:h-12" />
-                    <span className="text-2xl md:text-3xl font-[900] tracking-tighter uppercase text-white">
-                        CHATR<span className="text-[#ccff00]">.</span>
-                    </span>
-                </Link>
+            {authUser ? (
+                // Chat Page Header: Centered, smaller logo
+                <header className="h-12 md:h-16 px-6 md:px-10 flex items-center justify-center relative z-50">
+                    <Link to="/" className="flex items-center gap-3 group">
+                        <Logo className="w-6 h-6 md:w-8 md:h-8" />
+                        <span className="text-xl md:text-2xl font-[900] tracking-tighter uppercase text-white">
+                            CHATR<span className="text-[#ccff00]">.</span>
+                        </span>
+                    </Link>
 
-                {authUser && (
-                    <div className="flex items-center gap-4 animate-fade">
-                        <div className="px-4 py-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
-                            <div className="w-2 h-2 rounded-full bg-[#ccff00] shadow-[0_0_8px_#ccff00]"></div>
-                            <span className="text-[10px] font-bold tracking-widest text-white/70 uppercase">
+                    <div className="absolute right-6 md:right-10 flex items-center gap-4 animate-fade">
+                        <div className="px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#ccff00] shadow-[0_0_8px_#ccff00]"></div>
+                            <span className="text-[9px] font-bold tracking-widest text-white/70 uppercase">
                                 {authUser.username}
                             </span>
                         </div>
                     </div>
-                )}
-            </header>
+                </header>
+            ) : (
+                // Login/Signup Header: Top-Left
+                <header className="h-16 md:h-20 px-6 md:px-10 flex items-center justify-between z-50">
+                    <Link to="/" className="flex items-center gap-4 group">
+                        <Logo className="w-10 h-10 md:w-12 md:h-12" />
+                        <span className="text-2xl md:text-3xl font-[900] tracking-tighter uppercase text-white">
+                            CHATR<span className="text-[#ccff00]">.</span>
+                        </span>
+                    </Link>
+                </header>
+            )}
 
             {/* Main Content Area */}
             <main className="main-content">
