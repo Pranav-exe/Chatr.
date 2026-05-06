@@ -153,7 +153,7 @@ backend:
   image:
     repository: chatr-backend
     tag: "v2"
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   port: 5001
   service:
     type: ClusterIP
@@ -254,7 +254,7 @@ nginx:
   image:
     repository: chatr-nginx
     tag: "v2"
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   port: 80
   service:
     type: LoadBalancer
