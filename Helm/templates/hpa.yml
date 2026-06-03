@@ -1,0 +1,167 @@
+{{/*
+  ──────────────────────────────────────────────────────────────────
+  HPA — Horizontal Pod Autoscaler
+  ──────────────────────────────────────────────────────────────────
+
+  WHAT IS HPA?
+  HPA watches your pods' CPU/Memory usage and automatically:
+    - Adds more pods when usage is HIGH (scale out → handle more traffic)
+    - Removes pods when usage is LOW  (scale in  → save cost!)
+
+  HOW IT WORKS (simple flow):
+    1. Kubernetes Metrics Server reads CPU from each pod every 15s
+    2. HPA compares actual CPU vs your targetCPUUtilizationPercentage
+    3. If actual > target → add pods (up to maxReplicas)
+    4. If actual < target → remove pods (down to minReplicas)
+
+  COST SAFETY (why this won't bill you extra):
+    - minReplicas: 1 → always at least 1 pod (never 0, app stays alive)
+    - maxReplicas: 2 → MAXIMUM 2 pods ever (you control the ceiling)
+    - On GKE Autopilot, 2 small pods ≈ same cost as 1 medium pod
+    - HPA scales DOWN automatically when traffic drops → cost saved
+
+  PREREQUISITE (already done in your values.yaml ✅):
+    resources.requests.cpu must be set — HPA uses this as the baseline
+    for calculating utilization percentage.
+    Example: if requests.cpu=100m and actual usage=80m → 80% utilized
+
+  ENABLED/DISABLED via values.yaml:
+    Set hpa.enabled: false in values.yaml (dev) to skip HPA entirely.
+    Set hpa.enabled: true  in values-prod.yaml for production.
+  ──────────────────────────────────────────────────────────────────
+*/}}
+
+{{/* ── BACKEND HPA ──────────────────────────────────────────────── */}}
+{{- if .Values.hpa.backend.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-hpa
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "chatr.componentLabels" (dict "component" "backend" "context" .) | nindent 4 }}
+  annotations:
+    # 💡 LEARNING: This annotation documents WHY this HPA exists
+    description: "Scales backend pods based on CPU utilization"
+spec:
+  # WHAT to scale — points to your backend Deployment
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+
+  # FLOOR: never go below this many pods (keeps app always alive)
+  minReplicas: {{ .Values.hpa.backend.minReplicas }}
+
+  # CEILING: never go above this (protects your GKE budget!)
+  maxReplicas: {{ .Values.hpa.backend.maxReplicas }}
+
+  # WHEN to scale — the actual rules
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          # Scale UP when average CPU across all backend pods > 70%
+          # Scale DOWN when average CPU drops below ~50% (Kubernetes cool-down)
+          averageUtilization: {{ .Values.hpa.backend.targetCPUUtilizationPercentage }}
+
+    {{- if .Values.hpa.backend.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          # Also scale on memory pressure (optional but good for Node.js apps)
+          averageUtilization: {{ .Values.hpa.backend.targetMemoryUtilizationPercentage }}
+    {{- end }}
+
+  # STABILIZATION: prevents rapid scale-up/down oscillation ("flapping")
+  behavior:
+    scaleDown:
+      # Wait 5 min of low usage before removing a pod (prevents yo-yo effect)
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1            # Remove at most 1 pod per period
+          periodSeconds: 60   # Per minute
+    scaleUp:
+      # Scale up quickly (30s window) — don't wait to handle traffic spikes
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Pods
+          value: 1            # Add at most 1 pod per period
+          periodSeconds: 30   # Per 30 seconds
+{{- end }}
+
+---
+
+{{/* ── NGINX HPA ────────────────────────────────────────────────── */}}
+{{- if .Values.hpa.nginx.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nginx-hpa
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "chatr.componentLabels" (dict "component" "nginx" "context" .) | nindent 4 }}
+  annotations:
+    description: "Scales nginx pods based on CPU utilization"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nginx
+
+  minReplicas: {{ .Values.hpa.nginx.minReplicas }}
+  maxReplicas: {{ .Values.hpa.nginx.maxReplicas }}
+
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.hpa.nginx.targetCPUUtilizationPercentage }}
+
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 30
+{{- end }}
+
+{{/*
+  ── HOW TO CHECK IF HPA IS WORKING ───────────────────────────────
+
+  After deploying, run:
+    kubectl get hpa -n chatr
+    kubectl describe hpa backend-hpa -n chatr
+
+  You should see output like:
+    NAME          REFERENCE             TARGETS   MINPODS   MAXPODS   REPLICAS
+    backend-hpa   Deployment/backend   25%/70%   1         2         1
+
+  To simulate load and watch HPA in action (free, educational):
+    kubectl run load-test --image=busybox -it --rm -- \
+      sh -c "while true; do wget -q -O- http://backend:5001/api/health; done"
+
+  Then watch in another terminal:
+    kubectl get hpa -n chatr --watch
+
+  ── WHY NOT SCALE MongoDB or Redis? ──────────────────────────────
+  - MongoDB is a StatefulSet — HPA doesn't work well with stateful apps
+    (each pod has its own data; you'd need a replica set setup)
+  - Redis is a cache — 1 pod is fine for this scale; Redis Cluster
+    is a more advanced topic for later
+  ─────────────────────────────────────────────────────────────────
+*/}}

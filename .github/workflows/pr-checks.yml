@@ -1,18 +1,16 @@
-name: Helm Chart CI
+name: PR Checks
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
 jobs:
-  lint-test:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Helm
+      - name: Setup Helm
         uses: azure/setup-helm@v4
         with:
           version: "3.14.0"
@@ -35,3 +33,18 @@ jobs:
         run: |
           helm template test-release ./Helm -f ./Helm/values-prod.yaml > /dev/null
           echo "✅ Prod values validated"
+
+  trivy-scan:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Trivy
+        run:
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+          | sh -s -- -b /usr/local/bin v0.50.0
+
+      - name: Trivy config scan
+        run: trivy config --severity HIGH,CRITICAL --exit-code 0 ./Helm

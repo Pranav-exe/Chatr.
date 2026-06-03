@@ -283,3 +283,34 @@ ingress:
   host: ""
   annotations: {}
   tls: []
+
+# ──────────────────────────────────────────────────────────────────
+# HPA — Horizontal Pod Autoscaler (DISABLED in dev to avoid cost)
+# ──────────────────────────────────────────────────────────────────
+# HOW IT WORKS:
+#   Kubernetes watches CPU usage of your pods every 15 seconds.
+#   If avg CPU > targetCPUUtilizationPercentage → add a pod (up to maxReplicas)
+#   If avg CPU drops consistently  → remove a pod (down to minReplicas)
+#
+# COST SAFETY:
+#   maxReplicas: 2 means GKE can NEVER spin up more than 2 pods for
+#   a given service. On your e2-small nodes, 2 backend pods ≈ 2× 100m CPU
+#   which is well within node limits. HPA scales DOWN automatically.
+#
+# PREREQUISITE (already done ✅):
+#   resources.requests.cpu must be set in each service above.
+#   HPA calculates: utilization% = actual_cpu / requests_cpu × 100
+# ──────────────────────────────────────────────────────────────────
+hpa:
+  backend:
+    enabled: false          # ← OFF in dev (enable in values-prod.yaml)
+    minReplicas: 1          # Always keep at least 1 pod running
+    maxReplicas: 2          # Never exceed 2 pods (cost ceiling)
+    targetCPUUtilizationPercentage: 70    # Scale when CPU > 70%
+    targetMemoryUtilizationPercentage: 80 # Scale when memory > 80%
+
+  nginx:
+    enabled: false          # ← OFF in dev
+    minReplicas: 1
+    maxReplicas: 2
+    targetCPUUtilizationPercentage: 70

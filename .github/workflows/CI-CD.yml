@@ -1,0 +1,52 @@
+name: CI-CD
+on:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: asia-south1-docker.pkg.dev
+      PROJECT_ID: project-092b20ff-9e3c-4ee0-95f
+      REPO: chatr-repo
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: "google-github-actions/auth@v2"
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker asia-south1-docker.pkg.dev
+          echo "✅ Docker configured for Artifact Registry"
+
+      - name: Set up BuildKit
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Backend image
+        run: |
+          docker buildx build \
+          --platform linux/amd64 \
+          --tag "${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPO }}/chatr-backend:${{ env.IMAGE_TAG }}" \
+          --push \
+          server/
+
+      - name: Build and push Frontend image
+        run: |
+          docker buildx build \
+          --platform linux/amd64 \
+          --file ./client/Dockerfile \
+          --tag "${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPO }}/chatr-nginx:${{ env.IMAGE_TAG }}" \
+          --push \
+          .
