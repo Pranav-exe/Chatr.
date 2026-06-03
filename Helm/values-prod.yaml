@@ -1,0 +1,196 @@
+# # ╔══════════════════════════════════════════════════════════════════╗
+# # ║  values-prod.yaml — Production (2×e2-small, 2GB RAM per node)   ║
+# # ║                                                                  ║
+# # ║  Total available per node: ~1.3GB (after system overhead)       ║
+# # ║  Strategy: Minimal replicas, tight but safe resource limits     ║
+# # ║                                                                  ║
+# # ║  ⚠️  CONTAINS SECRETS - DO NOT COMMIT TO GIT                    ║
+# # ╚══════════════════════════════════════════════════════════════════╝
+
+# global:
+#   imageRegistry: asia-south1-docker.pkg.dev/project-092b20ff-9e3c-4ee0-95f/chatr-repo
+
+# backend:
+#   replicaCount: 1
+#   image:
+#     repository: chatr-backend
+#     tag: "v2"
+#     pullPolicy: Always
+#   resources:
+#     requests:
+#       cpu: 100m
+#       memory: 200Mi
+#     limits:
+#       cpu: 300m
+#       memory: 400Mi
+#   config:
+#     nodeEnv: production
+#     allowedOrigins: "http://34.47.242.245.nip.io"
+#     useHttps: "false"
+#     redisHost: redis
+#     redisPort: "6379"
+
+# # 🔐 PRODUCTION SECRETS - Generate with commands below
+# secrets:
+#   jwtSecret: "IiTVo3syNvOukTqU792DaBdVnB8JQo2GdzrKCfsW0TuTfDYXDnanu1q44esVo3Tq"
+#   mongoDbUri: "mongodb://chatr_admin:0AY7b5pH9Nq7/uXkccwUUYi6DUiytEVQ+9spwctx45o=@mongodb:27017/chatapp?authSource=admin"
+
+# mongodb:
+#   enabled: true
+#   auth:
+#     rootUsername: chatr_admin
+#     mongodbRootPassword: "0AY7b5pH9Nq7/uXkccwUUYi6DUiytEVQ+9spwctx45o="
+#   persistence:
+#     size: 8Gi
+#   resources:
+#     requests:
+#       cpu: 200m
+#       memory: 400Mi
+#     limits:
+#       cpu: 500m
+#       memory: 800Mi
+
+# redis:
+#   enabled: true
+#   resources:
+#     requests:
+#       cpu: 50m
+#       memory: 100Mi
+#     limits:
+#       cpu: 100m
+#       memory: 200Mi
+
+# nginx:
+#   replicaCount: 1
+#   image:
+#     repository: chatr-nginx
+#     tag: "v2"
+#     pullPolicy: Always
+#   service:
+#     type: ClusterIP
+#   resources:
+#     requests:
+#       cpu: 50m
+#       memory: 64Mi
+#     limits:
+#       cpu: 100m
+#       memory: 128Mi
+
+# ingress:
+#   enabled: true
+#   className: nginx
+#   host: "34.47.242.245.nip.io"
+#   tls: []
+
+# certManager:
+#   enabled: false
+
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║  values-prod.yaml — Production (2×e2-small, 2GB RAM per node)   ║
+# ║                                                                  ║
+# ║  ⚠️  CONTAINS SECRETS - DO NOT COMMIT TO GIT                    ║
+# ╚══════════════════════════════════════════════════════════════════╝
+
+global:
+  # imageRegistry: asia-south1-docker.pkg.dev/project-092b20ff-9e3c-4ee0-95f/chatr-repo
+  imageRegistry: "asia-south1-docker.pkg.dev/project-092b20ff-9e3c-4ee0-95f/chatr-repo"
+backend:
+  replicaCount: 1
+  image:
+    repository: chatr-backend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 100m
+      memory: 200Mi
+    limits:
+      cpu: 300m
+      memory: 400Mi
+  config:
+    nodeEnv: production
+    allowedOrigins: "http://34.180.32.80.nip.io"
+    useHttps: "false"
+    redisHost: redis
+    redisPort: "6379"
+# 🔐 FIXED: No full Mongo URI
+secrets:
+  existingSecretName: "backend-secret" # Tells Helm to use the secret we created manually!
+  jwtSecret: ""
+  mongo:
+    username: ""
+    password: ""
+mongodb:
+  enabled: true
+  auth:
+    rootUsername: chatr_admin
+    existingSecret: "backend-secret"
+  persistence:
+    size: 8Gi
+  resources:
+    requests:
+      cpu: 200m
+      memory: 400Mi
+    limits:
+      cpu: 500m
+      memory: 800Mi
+redis:
+  enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+    limits:
+      cpu: 100m
+      memory: 200Mi
+nginx:
+  replicaCount: 1
+  image:
+    repository: chatr-nginx
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+ingress:
+  enabled: true
+  className: nginx
+  host: "34.180.32.80.nip.io"
+  tls: []
+certManager:
+  enabled: false
+# ──────────────────────────────────────────────────────────────────
+# HPA — Horizontal Pod Autoscaler (ENABLED in prod)
+# ──────────────────────────────────────────────────────────────────
+# These values OVERRIDE the hpa.*.enabled: false from values.yaml
+#
+# COST EXPLANATION for your GKE cluster:
+#   - Your nodes: 2× e2-small (2 vCPU, 2GB RAM per node)
+#   - backend pod request: 100m CPU, 200Mi RAM
+#   - At maxReplicas: 2 → uses 200m CPU, 400Mi RAM total
+#   - That's only 10% of your total node CPU — safe and cheap!
+#   - HPA automatically scales BACK DOWN when traffic is low
+#
+# HOW TO MONITOR (run these after deploying):
+#   kubectl get hpa -n chatr                        # quick overview
+#   kubectl describe hpa backend-hpa -n chatr       # detailed status
+#   kubectl top pods -n chatr                       # real-time CPU/mem usage
+# ──────────────────────────────────────────────────────────────────
+hpa:
+  backend:
+    enabled: true # ← ON in production
+    minReplicas: 1 # Never go below 1 (app always alive)
+    maxReplicas: 2 # Hard cap at 2 (protects GKE budget)
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  nginx:
+    enabled: true # ← ON in production
+    minReplicas: 1
+    maxReplicas: 2
+    targetCPUUtilizationPercentage: 70
