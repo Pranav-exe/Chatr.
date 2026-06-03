@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: chatr-app
+  namespace: argocd # ArgoCD controller runs here
+spec:
+  project: default # Default project inside ArgoCD
+  source:
+    repoURL: "https://github.com/Pranav-exe/Chatr." # Your repo
+    targetRevision: HEAD
+    path: Helm # Path to your Helm chart directory in the repo
+    helm:
+      valueFiles:
+        - values.yaml
+        - values-prod.yaml # We want production values loaded!
+  destination:
+    server: "https://kubernetes.default.svc" # Deploys to the cluster ArgoCD is running on
+    namespace: chatr # The namespace where your actual app will run
+  syncPolicy:
+    automated:
+      prune: true # Delete k8s resources if they are deleted in Git
+      selfHeal: true # Overwrite changes made manually to the cluster
+    syncOptions:
+      - CreateNamespace=true # Create the 'chatr' namespace if it doesn't exist
