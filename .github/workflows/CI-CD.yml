@@ -5,16 +5,19 @@ on:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
+
+env:
+  REGISTRY: asia-south1-docker.pkg.dev
+  PROJECT_ID: project-092b20ff-9e3c-4ee0-95f
+  REPO: chatr-repo
+  IMAGE_TAG: ${{ github.sha }}
+  EMAIL_ADDRESS: "github-actions[bot]@users.noreply.github.com"
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    env:
-      REGISTRY: asia-south1-docker.pkg.dev
-      PROJECT_ID: project-092b20ff-9e3c-4ee0-95f
-      REPO: chatr-repo
-      IMAGE_TAG: ${{ github.sha }}
+
 
     steps:
       - name: Checkout code
@@ -50,3 +53,33 @@ jobs:
           --tag "${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPO }}/chatr-nginx:${{ env.IMAGE_TAG }}" \
           --push \
           .
+
+  update-image-tags:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Update image tags in Helm values
+        run: |
+          # 1. Update backend tags in both files
+          yq -i '.backend.image.tag = "${{ env.IMAGE_TAG }}"' Helm/values-dev.yaml
+          yq -i '.backend.image.tag = "${{ env.IMAGE_TAG }}"' Helm/values-prod.yaml
+          
+          # 2. Update nginx tags in both files
+          yq -i '.nginx.image.tag = "${{ env.IMAGE_TAG }}"' Helm/values-dev.yaml
+          yq -i '.nginx.image.tag = "${{ env.IMAGE_TAG }}"' Helm/values-prod.yaml
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "${{ env.EMAIL_ADDRESS }}"
+          git add Helm/values-dev.yaml Helm/values-prod.yaml
+          # Only commit and push if there are actual changes
+          git diff --staged --quiet || git commit -m "ci: update image tags to ${{ env.IMAGE_TAG }}"
+          git push
