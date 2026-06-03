@@ -98,7 +98,7 @@ backend:
   replicaCount: 1
   image:
     repository: chatr-backend
-    tag: "latest"
+    tag: "d9dd9f10fd1550a64849698ed2e74ba69bc7898c"
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -147,7 +147,7 @@ nginx:
   replicaCount: 1
   image:
     repository: chatr-nginx
-    tag: latest
+    tag: d9dd9f10fd1550a64849698ed2e74ba69bc7898c
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP

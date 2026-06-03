@@ -11,12 +11,11 @@
 # In dev, use local/smaller images
 global:
   imageRegistry: "" # Empty = no registry prefix. For local clusters (OrbStack/Minikube) use local images.
-
 backend:
   replicaCount: 1
   image:
     repository: chatr-backend
-    tag: "latest"
+    tag: "d9dd9f10fd1550a64849698ed2e74ba69bc7898c"
     pullPolicy: Never # Never = use locally built image (don't try to pull from registry)
   # Smaller resource limits for dev
   resources:
@@ -26,16 +25,13 @@ backend:
     limits:
       cpu: 200m
       memory: 256Mi
-
 config:
   nodeEnv: development
   allowedOrigins: "http://localhost:8080"
-
 # Dev secrets (safe to commit since it's local dev)
 secrets:
   jwtSecret: "dev-jwt-secret-not-for-production"
   mongoDbUri: "mongodb://chatr_admin:devmongo59@mongodb.chatr-dev.svc.cluster.local:27017/chatapp?authSource=admin"
-
 mongodb:
   auth:
     rootPassword: "devmongo59"
@@ -48,7 +44,6 @@ mongodb:
     limits:
       cpu: 200m
       memory: 512Mi
-
 redis:
   resources:
     requests:
@@ -57,12 +52,11 @@ redis:
     limits:
       cpu: 100m
       memory: 128Mi
-
 nginx:
   replicaCount: 1
   image:
     repository: chatr-nginx
-    tag: "latest"
+    tag: "d9dd9f10fd1550a64849698ed2e74ba69bc7898c"
     pullPolicy: Never
   service:
     type: NodePort # NodePort for local access (no cloud Load Balancer in dev)
@@ -73,7 +67,6 @@ nginx:
     limits:
       cpu: 100m
       memory: 128Mi
-
 # ── INGRESS (Local Development) ─────────────────────────────────
 # Enable this to practice Ingress routing locally on OrbStack.
 #
