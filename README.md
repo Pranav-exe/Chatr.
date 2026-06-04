@@ -1,105 +1,126 @@
-# Chatr. - The Ultimate Social Media Chat App
+# Chatr 💬 — Production-Grade GitOps & CI/CD Orchestration on GKE
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)
-![Author](https://img.shields.io/badge/author-Pranav%20Sharma-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Status](https://img.shields.io/badge/status-DevOps%20Ready-success.svg)
 
-**Chatr.** is a high-performance, real-time social messaging application featuring a premium "Namaste" Indian touch. Built for scale, it integrates a sophisticated MERN stack with Redis Pub/Sub for horizontal scaling and is fully orchestrated with Docker and Kubernetes.
+**Chatr** is a real-time, three-tier chat application built with a full TypeScript stack (React, Node.js/Express, Socket.io, MongoDB, Redis). While the application itself is fully functional and supports real-time messaging, the primary goal of this project was to serve as a comprehensive sandbox to implement and showcase a **production-grade DevOps engineering stack** using **Kubernetes (GKE), GitOps (ArgoCD), and Keyless CI/CD Pipelines (GitHub Actions + WIF)**.
 
 ---
 
-## 🚀 Key Features
+## 🏗️ Architecture & Deployment Flow
 
-### 🇮🇳 Friendly "Indian Touch" UI
-- **Namaste Greetings**: Welcoming users with cultural warmth on login and home screens.
-- **Localized Copy**: Social-media-friendly terminology (e.g., "Join the Conversation", "Online", "Secure Connection").
-- **Real-time Search**: Live filtering of friends in the sidebar with instant highlighting.
 
-### 💎 Premium Glassmorphism UI/UX
-- **Obsidion Design System**: 32px blur panels, high-fidelity gradients, and volt-glow micro-interactions.
-- **Fluid Layouts**: Asymmetric chat bubbles and optimized Framer Motion transitions.
+┌──────────────┐          ┌─────────────────┐          ┌─────────────┐
+│  Local Code  ├─────────►│  GitHub Actions ├─────────►│ GCP Artifact│
+│ (push main)  │          │  (Build & Tag)  │          │  Registry   │
+└──────────────┘          └────────┬────────┘          └─────────────┘
+│
+▼
+┌──────────────┐          ┌─────────────────┐          ┌──────────────┐
+│  Live App    │◄─────────┤     ArgoCD      │◄─────────┤ Helm Values  │
+│  (GKE Pod)   │          │  (GitOps Sync)  │          │  (yq Update) │
+└──────────────┘          └─────────────────┘          └──────────────┘
 
-### 🏗️ Scalable Infrastructure (DevOps)
-- **Redis Pub/Sub**: Integrated Socket.io Redis adapter for multi-instance scaling and global state management.
-- **Docker Orchestration**: Multi-stage production builds with separate environments for Development and Production.
-- **Kubernetes Ready**: Full manifest suite (Deployments, Services, ConfigMaps, Secrets, PVCs) for local Minikube or Cloud (GKE) deployments.
-- **Health Monitoring**: Built-in `/api/health` endpoints for orchestration readiness.
+1. **Push to main** — Developer pushes code changes to the `main` branch.
+2. **GitHub Actions CI/CD** — Authenticates to GCP via Workload Identity Federation (keyless, zero stored credentials). Builds multi-arch images using Docker BuildKit (`docker buildx`) tagged with the Git commit SHA. Pushes to Google Artifact Registry.
+3. **Automated GitOps Trigger** — Pipeline uses `yq` to update image tags in `values-dev.yaml` / `values-prod.yaml` and commits back to Git.
+4. **ArgoCD Sync** — ArgoCD detects the Git change and automatically syncs the updated Helm release to the GKE cluster.
+5. **Ingress & Routing** — Nginx Ingress Controller routes traffic using `nip.io` wildcard DNS.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 18, TypeScript, TailwindCSS, Zustand, Framer Motion
-- **Backend**: Node.js, Express, Socket.io (with Redis Adapter)
-- **Database**: MongoDB (Mongoose)
-- **Cache/PubSub**: Redis
-- **Infra**: Docker, Docker Compose, Kubernetes (Minikube)
+### Application
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 18, TypeScript, TailwindCSS, Zustand, Framer Motion |
+| Backend | Node.js, Express, TypeScript |
+| Real-time | Socket.io with Redis Pub/Sub adapter |
+| Auth | JWT (JSON Web Tokens), HTTP-only cookies |
+| Database | MongoDB with Mongoose ODM (StatefulSet + PVC) |
+| Cache / Broker | Redis (Pub/Sub for horizontal Socket.io scaling) |
+
+### DevOps & Cloud
+
+| Tool | Purpose |
+|---|---|
+| Google Kubernetes Engine (GKE) | Managed Kubernetes cluster |
+| Helm v3 | Kubernetes package management, env-specific values files |
+| ArgoCD | GitOps continuous delivery, automated cluster sync |
+| GitHub Actions | CI/CD pipeline — build, scan, push, deploy |
+| Workload Identity Federation | Keyless GCP auth from GitHub Actions (OIDC/STS) |
+| Google Artifact Registry | Private container image registry |
+| Nginx Ingress Controller | Cluster ingress, WebSocket routing |
+| Horizontal Pod Autoscaler | CPU/Memory-based autoscaling |
+| Trivy | Container vulnerability scanning in CI pipeline |
+| Terraform | GKE cluster provisioning (IaC) |
 
 ---
 
-## ⚡️ Quick Start (Local Docker)
+## 🔒 DevOps Engineering Highlights
 
-### Prerequisites
-- Docker & Docker Compose
-- Node.js 18+ (for local scripts)
+### 🔑 1. Keyless Authentication via Workload Identity Federation
+Instead of storing long-lived GCP service account JSON keys in GitHub Secrets, this project implements WIF. GitHub Actions presents a short-lived OIDC token to Google's Security Token Service (STS), which is exchanged for a 1-hour GCP credential. **Zero risk of leaked private key files.**
 
-### Installation & Run
+### 🔄 2. Dynamic GitOps Tagging with `yq`
+Avoids mutable `:latest` tags — which cause Kubernetes cache failures and untraceable builds. The pipeline uses `yq` to surgically update nested Helm values files with the exact Git commit SHA on every build, ensuring clean versioning and a full audit trail.
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Pranav-exe/Chatr..git
-   cd Chatr.
-   ```
+### 🛡️ 3. Externalized Secret Management
+All production secrets (JWT signing keys, MongoDB credentials) are fully externalized from Git. Helm templates use a conditional check (`{{- if not .Values.secrets.existingSecretName }}`) to skip plain-text secret generation. Secrets are pre-provisioned directly on the cluster under the `chatr` namespace.
 
-2. **Setup Environment**
-   Copy the example environment template:
-   ```bash
-   cp server/.env.example server/.env
-   # Open .env and add your MONGO_DB_URI and a secure JWT_SECRET
-   ```
+### 🔌 4. WebSocket Routing Through Nginx Ingress
+Configured Nginx Ingress with explicit WebSocket upgrade headers (`Upgrade`, `Connection`) to correctly proxy Socket.io long-lived connections through the ingress layer — a non-trivial real-world networking challenge in Kubernetes.
 
-3. **Spin up with Docker Compose**
-   ```bash
-   # Development Mode (Hot Reload)
-   docker compose up --build
-
-   # Production Mode
-   docker compose -f docker-compose.prod.yml up --build
-   ```
+### 📈 5. High-Availability Autoscaling
+HPAs configured for both Nginx and backend deployments with CPU threshold at `70%` and memory at `80%`, with `maxReplicas: 2` hard caps to protect billing limits on `e2-small` nodes.
 
 ---
 
-## ☸️ Kubernetes Deployment (Minikube)
+## 📁 Repository Structure
 
-1. **Start Minikube**
-   ```bash
-   minikube start
-   ```
-
-2. **Connect Docker to Minikube**
-   ```bash
-   eval $(minikube docker-env)
-   ```
-
-3. **Build Images**
-   ```bash
-   docker build -t chatr-backend:k8s ./server
-   docker build -t chatr-client:k8s -f ./client/Dockerfile .
-   ```
-
-4. **Apply Manifests**
-   ```bash
-   kubectl apply -f kubernetes/
-   ```
+Chatr/
+├── .github/workflows/      # GitHub Actions CI/CD pipeline
+├── Helm/                   # Helm chart
+│   ├── templates/          # Kubernetes manifest templates
+│   ├── values.yaml         # Base values
+│   ├── values-dev.yaml     # Dev environment overrides
+│   └── values-prod.yaml    # Prod environment overrides
+├── argocd/                 # ArgoCD Application manifests
+├── client/                 # React + TypeScript frontend
+├── server/                 # Node.js + Express + TypeScript backend
+├── k8s/                    # Raw Kubernetes manifests (pre-Helm)
+├── nginx/                  # Nginx config
+├── scripts/                # Utility shell scripts
+├── docker-compose.yml      # Local development stack
+└── docker-compose.prod.yml # Production Docker Compose
 
 ---
 
-## 👨‍💻 Developer
+## 🚀 Run Locally
 
-**Pranav Sharma**
-- *Full Stack Engineer & DevOps Enthusiast*
-- Building scalable architectures with a premium touch.
+Spin up the full stack (React, Express, MongoDB, Redis) locally with Docker Compose:
+
+```bash
+git clone https://github.com/Pranav-exe/Chatr..git
+cd Chatr.
+cp server/.env.example server/.env
+# Add your MONGO_URI and JWT_SECRET to .env
+docker compose up --build
+```
+
+App runs at `http://localhost:5173`
+
+---
+
+## 👨‍💻 Connect
+
+Actively seeking **Cloud / DevOps Engineering** roles.
+
+- **GitHub:** [Pranav-exe](https://github.com/Pranav-exe)
+- **LinkedIn:** [Pranav Sharma](https://www.linkedin.com/in/pranavsharrma)
+- **Email:** sharmapranav2003@gmail.com
 
 ---
 
