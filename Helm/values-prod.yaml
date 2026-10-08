@@ -221,7 +221,7 @@ config:
   nodeEnv: production
   redisHost: redis
   redisPort: "6379"
-  allowedOrigins: "http://localhost:8080"
+  allowedOrigins: "http://af1f3fa952302491cbffc288b67d327d-1017246815.ap-south-1.elb.amazonaws.com"
   useHttps: "false"
 
 secrets:
