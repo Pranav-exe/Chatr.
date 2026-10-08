@@ -41,9 +41,17 @@ spec:
           imagePullPolicy: {{ .Values.mongodb.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.mongodb.port }}
-          envFrom:
-            - secretRef:
-                name: mongodb-secret
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mongodb.auth.existingSecret }}
+                  key: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mongodb.auth.existingSecret }}
+                  key: MONGO_INITDB_ROOT_PASSWORD
           volumeMounts:
             - name: mongodb-storage
               mountPath: /data/db
