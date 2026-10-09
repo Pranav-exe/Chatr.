@@ -79,7 +79,11 @@ HPAs configured for both Nginx and backend deployments with CPU threshold at `70
 
 ---
 
-## 📁 Repository Structure
+## 🗺️ Roadmap & Future Improvements
+*   **[P1 - NEXT FOCUS] Observability Stack (Prom/Grafana):** Integrate Prometheus, Alertmanager, and Grafana into the Helm charts to gain deep insight into pod health, latency, and resource utilization. This will evolve the current 'DevOps Ready' badge.
+*   **[P2] Policy Enforcement (OPA/Gatekeeper):** Implement Open Policy Agent (OPA) constraints to enforce security policies (e.g., no containers running as root, mandatory resource limits) before resources are deployed to EKS.
+*   **[P3] Disaster Recovery (DR):** Automate backups of critical stateful components (like MongoDB PVC snapshots) and define a tested failover/restore procedure.
+*   **[P4] GitOps Reconciliation Testing:** Develop a process to test rollback scenarios when an image push (Step 12 in CI-CD) fails in an early stage.
 
 Chatr/
 ├── .github/workflows/      # GitHub Actions CI/CD pipeline

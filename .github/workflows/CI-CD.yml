@@ -1,85 +1,135 @@
-name: CI-CD
+name: CI-CD (AWS EKS)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# WHAT THIS PIPELINE DOES:
+#
+# Job 1 — build-and-push:
+#   1. Authenticate to AWS using OIDC (keyless — no stored credentials!)
+#   2. Build Docker images for backend and nginx using BuildKit
+#   3. Push both images to ECR with the git commit SHA as tag
+#
+# Job 2 — update-image-tags (runs after Job 1 succeeds):
+#   4. Update image tags in Helm/values-prod.yaml using yq
+#   5. Commit and push the change back to git
+#   6. ArgoCD detects the change and syncs to EKS automatically
+#
+# GITHUB SECRETS REQUIRED:
+#   AWS_ACCOUNT_ID  → Your 12-digit AWS account number
+#   AWS_ROLE_ARN    → ARN of the IAM role created by Terraform
+#                     (see terraform output github_actions_role_arn)
+# ─────────────────────────────────────────────────────────────────────────────
+
 on:
   push:
     branches: [main]
 
 permissions:
-  id-token: write
-  contents: write
+  id-token: write    # REQUIRED for OIDC — lets GitHub issue a JWT token
+  contents: write    # REQUIRED to push the image tag commit back to repo
 
 env:
-  REGISTRY: asia-south1-docker.pkg.dev
-  PROJECT_ID: project-092b20ff-9e3c-4ee0-95f
-  REPO: chatr-repo
-  IMAGE_TAG: ${{ github.sha }}
-  EMAIL_ADDRESS: "github-actions[bot]@users.noreply.github.com"
+  AWS_REGION: ap-south-1
+  # ECR registry URL format: <account-id>.dkr.ecr.<region>.amazonaws.com
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com
+  IMAGE_TAG: ${{ github.sha }}    # Use git commit SHA as image tag (immutable, traceable)
 
 jobs:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 1: Build Docker images and push to ECR
+  # ─────────────────────────────────────────────────────────────────────────────
   build-and-push:
     runs-on: ubuntu-latest
-
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Authenticate to Google Cloud
-        uses: "google-github-actions/auth@v2"
+      # AWS OIDC auth — equivalent to your 'google-github-actions/auth@v2'
+      # GitHub Actions presents a JWT to AWS STS.
+      # AWS validates it against the OIDC provider we created in Terraform.
+      # Returns temporary credentials valid for 1 hour.
+      # ZERO stored AWS secrets needed in GitHub!
+      - name: Configure AWS credentials (OIDC — keyless)
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Configure Docker for Artifact Registry
-        run: |
-          gcloud auth configure-docker asia-south1-docker.pkg.dev
-          echo "✅ Docker configured for Artifact Registry"
+      # Authenticate Docker to ECR
+      # Equivalent to: gcloud auth configure-docker asia-south1-docker.pkg.dev
+      # This gets a short-lived password from AWS and configures Docker to use it.
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Set up BuildKit
+      # BuildKit enables:
+      # - Multi-platform builds (linux/amd64 for EKS even if you're on ARM Mac)
+      # - Layer caching (faster rebuilds)
+      - name: Set up Docker BuildKit
         uses: docker/setup-buildx-action@v3
 
+      # Build the Node.js backend and push directly to ECR
+      # --platform linux/amd64: EKS nodes run on x86_64, ensure correct arch
+      # --push: build + push in one step (more efficient than build then push)
       - name: Build and push Backend image
         run: |
           docker buildx build \
-          --platform linux/amd64 \
-          --tag "${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPO }}/chatr-backend:${{ env.IMAGE_TAG }}" \
-          --push \
-          server/
+            --platform linux/amd64 \
+            --tag "${{ env.ECR_REGISTRY }}/chatr-backend:${{ env.IMAGE_TAG }}" \
+            --push \
+            server/
 
-      - name: Build and push Frontend image
+      # Build the nginx image (serves React frontend + proxies API)
+      # Note: uses client/Dockerfile but the build context is . (repo root)
+      # because the Dockerfile likely copies from both client/ and server/dist
+      - name: Build and push Nginx/Frontend image
         run: |
           docker buildx build \
-          --platform linux/amd64 \
-          --file ./client/Dockerfile \
-          --tag "${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPO }}/chatr-nginx:${{ env.IMAGE_TAG }}" \
-          --push \
-          .
+            --platform linux/amd64 \
+            --file ./client/Dockerfile \
+            --tag "${{ env.ECR_REGISTRY }}/chatr-nginx:${{ env.IMAGE_TAG }}" \
+            --push \
+            .
 
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 2: Update image tags in Helm values → triggers ArgoCD sync
+  # ─────────────────────────────────────────────────────────────────────────────
   update-image-tags:
-    needs: build-and-push
+    needs: build-and-push    # only runs if build-and-push succeeded
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
+          fetch-depth: 0    # full history needed for git operations
 
+      # yq is a YAML CLI tool — like jq but for YAML
+      # It surgically updates YAML fields without touching the rest of the file
+      # Using exact git SHA (not :latest) gives you:
+      #   - Immutable builds — same SHA = same image always
+      #   - Full audit trail in git history
+      #   - ArgoCD can detect the actual change and sync
       - name: Update image tags in Helm values
         run: |
-          # 1. Update backend tags in both files
-          yq -i '.backend.image.tag = "${{ env.IMAGE_TAG }}"' Helm/values-dev.yaml
+          # Update backend image tag in prod values
           yq -i '.backend.image.tag = "${{ env.IMAGE_TAG }}"' Helm/values-prod.yaml
-          
-          # 2. Update nginx tags in both files
-          yq -i '.nginx.image.tag = "${{ env.IMAGE_TAG }}"' Helm/values-dev.yaml
+
+          # Update nginx image tag in prod values
           yq -i '.nginx.image.tag = "${{ env.IMAGE_TAG }}"' Helm/values-prod.yaml
 
-      - name: Commit and push changes
+          echo "Updated both image tags to: ${{ env.IMAGE_TAG }}"
+
+      # Commit the updated values file back to git
+      # ArgoCD polls the repo every 3 minutes and detects this commit
+      # Then automatically syncs the new image tags to the EKS cluster
+      - name: Commit and push updated image tags
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "${{ env.EMAIL_ADDRESS }}"
-          git add Helm/values-dev.yaml Helm/values-prod.yaml
-          # Only commit and push if there are actual changes
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Helm/values-prod.yaml
+
+          # Only commit if there are actual changes (avoids empty commits)
           git diff --staged --quiet || git commit -m "ci: update image tags to ${{ env.IMAGE_TAG }}"
           git push
