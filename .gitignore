@@ -43,3 +43,30 @@ k8s/mongodb/secret.yml
 # Helm configuration containing secrets
 Helm/values-prod.yaml
 Helm/values-dev.yaml
+
+# Terraform state and local files
+*.tfstate
+*.tfstate.*
+.terraform/
+crash.log
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+
+# Secrets and credentials
+.env
+.env.*
+*.pem
+*.key
+*.p12
+id_rsa*
+credentials
+.aws/
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
+mongodb-0.yaml
+
+tfplan
+*.tfplan
