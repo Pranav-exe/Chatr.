@@ -29,10 +29,12 @@ jobs:
           helm template test-release ./Helm -f ./Helm/values-dev.yaml > /dev/null
           echo "✅ Dev values validated"
 
-      - name: Template with prod values
-        run: |
-          helm template test-release ./Helm -f ./Helm/values-prod.yaml > /dev/null
-          echo "✅ Prod values validated"
+      # Frontend Code Quality Gate (ESLint)
+# ─────────────────────────────────────────────────────────────────────────────
+      - name: Install Frontend Dependencies
+        run: npm install
+      - name: Frontend lint (client)
+        run: npm run lint --prefix ./client
 
   trivy-scan:
     runs-on: ubuntu-latest

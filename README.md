@@ -4,7 +4,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Status](https://img.shields.io/badge/status-DevOps%20Ready-success.svg)
 
-**Chatr** is a real-time, three-tier chat application built with a full TypeScript stack (React, Node.js/Express, Socket.io, MongoDB, Redis). While the application itself is fully functional and supports real-time messaging, the primary goal of this project was to serve as a comprehensive sandbox to implement and showcase a **production-grade DevOps engineering stack** using **Kubernetes (GKE), GitOps (ArgoCD), and Keyless CI/CD Pipelines (GitHub Actions + WIF)**.
+**Chatr** is a robust, real-time, three-tier chat application, fully engineered with a TypeScript stack (React, Node.js/Express, Socket.io, MongoDB, Redis). The project integrates a mature DevOps pipeline, showcasing production-grade capabilities built on **Kubernetes (GKE/EKS)**, **GitOps (ArgoCD)**, and **Keyless CI/CD (GitHub Actions)**. It has been demonstrated across both **GCP and AWS** environments.
 
 ---
 
