@@ -70,3 +70,4 @@ mongodb-0.yaml
 
 tfplan
 *.tfplan
+plan.txt
