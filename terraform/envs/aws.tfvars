@@ -1,7 +1,7 @@
 aws_region          = "ap-south-1"
 cluster_name        = "chatr"
 environment         = "lab"
-kubernetes_version  = "1.33"
+kubernetes_version  = "1.36"
 node_instance_type  = "t3.small"
 node_min_size       = 1
 node_desired_size   = 2

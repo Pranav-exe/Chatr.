@@ -19,7 +19,7 @@ variable "node_instance_type" {
 variable "kubernetes_version" {
   type        = string
   description = "kubernetes version for eks cluster"
-  default     = "1.33"
+  default     = "1.36"
 }
 variable "vpc_cidr" {
   default = "10.0.0.0/16"
