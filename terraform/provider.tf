@@ -3,7 +3,7 @@ provider "aws" {
   default_tags {
     tags = {
       Project     = "Chatr"
-      Environment = "Dev"
+      Environment = var.env
       ManagedBy   = "terraform"
     }
   }

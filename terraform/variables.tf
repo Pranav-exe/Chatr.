@@ -49,3 +49,9 @@ variable "node_max_size" {
   description = "maximum nodes in the managed group"
   default     = 2
 }
+variable "env" {
+  type        = string
+  description = "env variables for the services"
+  default     = "lab"
+}
+

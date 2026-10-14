@@ -51,6 +51,7 @@ Helm/values-dev.yaml
 crash.log
 *.tfvars
 *.tfvars.json
+!terraform/envs/*.tfvars
 !*.tfvars.example
 
 # Secrets and credentials
