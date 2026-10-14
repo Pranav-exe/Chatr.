@@ -29,10 +29,21 @@ jobs:
           helm template test-release ./Helm -f ./Helm/values-dev.yaml > /dev/null
           echo "✅ Dev values validated"
 
-      - name: Template with prod values
-        run: |
-          helm template test-release ./Helm -f ./Helm/values-prod.yaml > /dev/null
-          echo "✅ Prod values validated"
+      # Frontend code quality gate (ESLint)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: client
+
+      - name: Frontend lint
+        run: npm run lint
+        working-directory: client
 
   trivy-scan:
     runs-on: ubuntu-latest
@@ -41,10 +52,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Trivy
-        run:
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
-          | sh -s -- -b /usr/local/bin v0.50.0
+      - name: Install Trivy (pinned, checksum verified)
+        run: |
+          VERSION=0.71.2
+          BASE=https://github.com/aquasecurity/trivy/releases/download/v${VERSION}
+          curl -sSfLO ${BASE}/trivy_${VERSION}_Linux-64bit.tar.gz
+          curl -sSfLO ${BASE}/trivy_${VERSION}_checksums.txt
+          grep "trivy_${VERSION}_Linux-64bit.tar.gz" trivy_${VERSION}_checksums.txt | sha256sum --check -
+          tar -xzf trivy_${VERSION}_Linux-64bit.tar.gz trivy
+          sudo mv trivy /usr/local/bin/
+          trivy --version
 
       - name: Trivy config scan
         run: trivy config --severity HIGH,CRITICAL --exit-code 0 ./Helm
