@@ -52,10 +52,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Trivy
+      - name: Install Trivy (pinned, checksum verified)
         run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
-          | sudo sh -s -- -b /usr/local/bin v0.50.0
+          VERSION=0.71.2
+          BASE=https://github.com/aquasecurity/trivy/releases/download/v${VERSION}
+          curl -sSfLO ${BASE}/trivy_${VERSION}_Linux-64bit.tar.gz
+          curl -sSfLO ${BASE}/trivy_${VERSION}_checksums.txt
+          grep "trivy_${VERSION}_Linux-64bit.tar.gz" trivy_${VERSION}_checksums.txt | sha256sum --check -
+          tar -xzf trivy_${VERSION}_Linux-64bit.tar.gz trivy
+          sudo mv trivy /usr/local/bin/
+          trivy --version
 
       - name: Trivy config scan
         run: trivy config --severity HIGH,CRITICAL --exit-code 0 ./Helm
