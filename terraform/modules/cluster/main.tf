@@ -5,8 +5,8 @@ module "eks" {
   name               = var.cluster_name
   kubernetes_version = var.kubernetes_version
 
-  vpc_id     = module.network.vpc_id
-  subnet_ids = module.network.private_subnets
+  vpc_id     = var.vpc_id
+  subnet_ids = var.private_subnet_ids
 
   enable_irsa                              = true
   endpoint_public_access                   = true
