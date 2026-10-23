@@ -44,23 +44,31 @@ k8s/mongodb/secret.yml
 Helm/values-prod.yaml
 Helm/values-dev.yaml
 
-# Terraform local files and state — never commit
-**/.terraform/
+# Terraform state and local files
 *.tfstate
 *.tfstate.*
-*.tfplan
+.terraform/
 crash.log
-crash.*.log
-
-# Terraform variable files may contain secrets
 *.tfvars
 *.tfvars.json
+!terraform/envs/*.tfvars
+!*.tfvars.example
 
-# Terraform override files
-override.tf
-override.tf.json
-*_override.tf
-*_override.tf.json
-# Terraform plan output
+# Secrets and credentials
+.env
+.env.*
+*.pem
+*.key
+*.p12
+id_rsa*
+credentials
+.aws/
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
+mongodb-0.yaml
+
+tfplan
 *.tfplan
-**/plan.txt
+plan.txt

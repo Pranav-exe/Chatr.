@@ -54,3 +54,4 @@ variable "environment" {
   description = "env variables for the services"
   default     = "lab"
 }
+
